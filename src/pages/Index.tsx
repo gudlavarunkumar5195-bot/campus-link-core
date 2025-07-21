@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import AuthForm from '@/components/auth/AuthForm';
 import Navigation from '@/components/layout/Navigation';
 import Dashboard from '@/components/dashboard/Dashboard';
+import SchoolsManagement from '@/components/schools/SchoolsManagement';
 import { Loader2 } from 'lucide-react';
 
 const Index = () => {
@@ -46,6 +47,12 @@ const Index = () => {
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard userRole={profile.role} />;
+      case 'schools':
+        return <SchoolsManagement />;
+      case 'create-school':
+        // This will be handled by the separate CreateSchool page
+        window.location.href = '/create-school';
+        return null;
       case 'users':
         return <div className="p-6">Users management coming soon...</div>;
       case 'classes':

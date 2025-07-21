@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   LayoutDashboard, 
   Users, 
@@ -10,7 +11,9 @@ import {
   UserCheck,
   FileText,
   Settings,
-  LogOut
+  LogOut,
+  Building2,
+  Plus
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -39,6 +42,23 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
     },
   });
 
+  const { data: school } = useQuery({
+    queryKey: ['school', profile?.school_id],
+    queryFn: async () => {
+      if (!profile?.school_id) return null;
+      
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .eq('id', profile.school_id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.school_id,
+  });
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -55,10 +75,21 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
     }
   };
 
+  const isSuperAdmin = profile?.role === 'admin' && profile?.school_id === null;
+
   const getMenuItems = () => {
     const baseItems = [
       { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     ];
+
+    if (isSuperAdmin) {
+      return [
+        ...baseItems,
+        { key: 'schools', label: 'Schools', icon: Building2 },
+        { key: 'create-school', label: 'Create School', icon: Plus },
+        { key: 'settings', label: 'Settings', icon: Settings },
+      ];
+    }
 
     if (userRole === 'admin') {
       return [
@@ -96,11 +127,36 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
   return (
     <div className="bg-white shadow-sm border-r h-full flex flex-col">
       <div className="p-6 border-b">
-        <h1 className="text-xl font-bold text-gray-900">School ERP</h1>
+        <div className="flex items-center space-x-3 mb-3">
+          {school?.logo_url ? (
+            <img 
+              src={school.logo_url} 
+              alt={`${school.name} logo`}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+              <Building2 className="h-4 w-4 text-white" />
+            </div>
+          )}
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">
+              {school?.name || 'School ERP'}
+            </h1>
+            {isSuperAdmin && (
+              <Badge variant="secondary" className="text-xs">
+                Super Admin
+              </Badge>
+            )}
+          </div>
+        </div>
         {profile && (
-          <p className="text-sm text-gray-600 mt-1">
-            {profile.first_name} {profile.last_name}
-          </p>
+          <div className="text-sm text-gray-600">
+            <p className="font-medium">
+              {profile.first_name} {profile.last_name}
+            </p>
+            <p className="text-xs capitalize">{profile.role}</p>
+          </div>
         )}
       </div>
       
