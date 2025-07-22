@@ -54,6 +54,11 @@ const SchoolsManagement = () => {
     }
   };
 
+  // Helper function to generate a slug from school name
+  const generateSlug = (name: string) => {
+    return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -129,7 +134,7 @@ const SchoolsManagement = () => {
                     <div>
                       <CardTitle className="text-lg">{school.name}</CardTitle>
                       <Badge variant="secondary" className="text-xs">
-                        {school.slug}
+                        {generateSlug(school.name)}
                       </Badge>
                     </div>
                   </div>
@@ -142,9 +147,9 @@ const SchoolsManagement = () => {
                       {school.address}
                     </p>
                   )}
-                  {school.contact_email && (
+                  {school.email && (
                     <p className="text-sm text-gray-600">
-                      {school.contact_email}
+                      {school.email}
                     </p>
                   )}
                   <div className="flex space-x-2">
