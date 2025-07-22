@@ -16,9 +16,10 @@ interface CreateSchoolFormProps {
 const CreateSchoolForm: React.FC<CreateSchoolFormProps> = ({ onSchoolCreated }) => {
   const [formData, setFormData] = useState({
     name: '',
-    slug: '',
     address: '',
-    contact_email: '',
+    email: '',
+    phone: '',
+    website: '',
     logo_url: '',
   });
   const [loading, setLoading] = useState(false);
@@ -28,8 +29,7 @@ const CreateSchoolForm: React.FC<CreateSchoolFormProps> = ({ onSchoolCreated }) 
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value,
-      ...(name === 'name' && { slug: value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })
+      [name]: value
     }));
   };
 
@@ -54,9 +54,10 @@ const CreateSchoolForm: React.FC<CreateSchoolFormProps> = ({ onSchoolCreated }) 
       onSchoolCreated(data);
       setFormData({
         name: '',
-        slug: '',
         address: '',
-        contact_email: '',
+        email: '',
+        phone: '',
+        website: '',
         logo_url: '',
       });
     } catch (error: any) {
@@ -77,40 +78,50 @@ const CreateSchoolForm: React.FC<CreateSchoolFormProps> = ({ onSchoolCreated }) 
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">School Name *</Label>
+            <Input
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="Enter school name"
+            />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">School Name *</Label>
+              <Label htmlFor="email">Contact Email</Label>
               <Input
-                id="name"
-                name="name"
-                value={formData.name}
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
                 onChange={handleChange}
-                required
-                placeholder="Enter school name"
+                placeholder="contact@school.edu"
               />
             </div>
             <div>
-              <Label htmlFor="slug">Slug *</Label>
+              <Label htmlFor="phone">Phone Number</Label>
               <Input
-                id="slug"
-                name="slug"
-                value={formData.slug}
+                id="phone"
+                name="phone"
+                value={formData.phone}
                 onChange={handleChange}
-                required
-                placeholder="school-slug"
+                placeholder="+1 (555) 123-4567"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="contact_email">Contact Email</Label>
+            <Label htmlFor="website">Website</Label>
             <Input
-              id="contact_email"
-              name="contact_email"
-              type="email"
-              value={formData.contact_email}
+              id="website"
+              name="website"
+              value={formData.website}
               onChange={handleChange}
-              placeholder="contact@school.edu"
+              placeholder="https://school.edu"
             />
           </div>
 

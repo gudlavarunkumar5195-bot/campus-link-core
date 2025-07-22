@@ -29,6 +29,19 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
     },
   });
 
+  const { data: schoolsCount } = useQuery({
+    queryKey: ['schools-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('schools')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: profile?.role === 'admin' && profile?.school_id === null,
+  });
+
   const isSuperAdmin = profile?.role === 'admin' && profile?.school_id === null;
 
   const getWelcomeMessage = () => {
@@ -80,7 +93,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
           <Button 
             variant="outline"
             className="flex flex-col items-center space-y-2 h-20"
-            onClick={() => {/* Navigate to schools management */}}
+            onClick={() => navigate('/schools')}
           >
             <Building2 className="h-6 w-6" />
             <span>Manage Schools</span>
@@ -88,7 +101,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
           <Button 
             variant="outline"
             className="flex flex-col items-center space-y-2 h-20"
-            onClick={() => {/* Navigate to users management */}}
+            onClick={() => navigate('/users')}
           >
             <Users className="h-6 w-6" />
             <span>Manage Users</span>
@@ -96,7 +109,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
           <Button 
             variant="outline"
             className="flex flex-col items-center space-y-2 h-20"
-            onClick={() => {/* Navigate to settings */}}
+            onClick={() => navigate('/settings')}
           >
             <Settings className="h-6 w-6" />
             <span>System Settings</span>
@@ -106,6 +119,59 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
     </Card>
   );
 
+  const renderSuperAdminStats = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Schools</p>
+              <p className="text-3xl font-bold">{schoolsCount || 0}</p>
+            </div>
+            <Building2 className="h-8 w-8 text-blue-500" />
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Users</p>
+              <p className="text-3xl font-bold">--</p>
+            </div>
+            <Users className="h-8 w-8 text-green-500" />
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Active Sessions</p>
+              <p className="text-3xl font-bold">--</p>
+            </div>
+            <div className="h-8 w-8 bg-orange-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-sm font-bold">S</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">System Health</p>
+              <p className="text-3xl font-bold text-green-600">Good</p>
+            </div>
+            <div className="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-sm">✓</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div>
@@ -113,7 +179,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
         <p className="text-gray-600 mt-2">{getDescription()}</p>
       </div>
 
-      <DashboardStats userRole={userRole} />
+      {isSuperAdmin ? renderSuperAdminStats() : <DashboardStats userRole={userRole} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -122,7 +188,14 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
           </CardHeader>
           <CardContent>
             <div className="text-gray-500 text-center py-8">
-              Recent activity will be displayed here
+              {isSuperAdmin ? (
+                <div>
+                  <p className="mb-2">System-wide activity monitoring</p>
+                  <p className="text-sm">Recent school registrations, user activities, and system events will be displayed here</p>
+                </div>
+              ) : (
+                "Recent activity will be displayed here"
+              )}
             </div>
           </CardContent>
         </Card>

@@ -6,6 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import CreateSchool from "./pages/CreateSchool";
+import SchoolsManagementPage from "./pages/SchoolsManagement";
+import UsersManagement from "./pages/UsersManagement";
+import SystemSettings from "./pages/SystemSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -19,6 +22,9 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/create-school" element={<CreateSchool />} />
+          <Route path="/schools" element={<SchoolsManagementPage />} />
+          <Route path="/users" element={<UsersManagement />} />
+          <Route path="/settings" element={<SystemSettings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

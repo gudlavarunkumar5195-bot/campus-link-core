@@ -18,6 +18,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
 interface NavigationProps {
   userRole: 'admin' | 'teacher' | 'student';
@@ -27,6 +28,7 @@ interface NavigationProps {
 
 const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageChange }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -77,6 +79,20 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
 
   const isSuperAdmin = profile?.role === 'admin' && profile?.school_id === null;
 
+  const handlePageChange = (page: string) => {
+    if (page === 'schools') {
+      navigate('/schools');
+    } else if (page === 'create-school') {
+      navigate('/create-school');
+    } else if (page === 'users' && isSuperAdmin) {
+      navigate('/users');
+    } else if (page === 'settings' && isSuperAdmin) {
+      navigate('/settings');
+    } else {
+      onPageChange(page);
+    }
+  };
+
   const getMenuItems = () => {
     const baseItems = [
       { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -87,6 +103,7 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
         ...baseItems,
         { key: 'schools', label: 'Schools', icon: Building2 },
         { key: 'create-school', label: 'Create School', icon: Plus },
+        { key: 'users', label: 'Users', icon: Users },
         { key: 'settings', label: 'Settings', icon: Settings },
       ];
     }
@@ -164,12 +181,18 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
         <ul className="space-y-2">
           {getMenuItems().map((item) => {
             const Icon = item.icon;
+            const isActive = currentPage === item.key || 
+              (item.key === 'schools' && window.location.pathname === '/schools') ||
+              (item.key === 'create-school' && window.location.pathname === '/create-school') ||
+              (item.key === 'users' && window.location.pathname === '/users') ||
+              (item.key === 'settings' && window.location.pathname === '/settings');
+            
             return (
               <li key={item.key}>
                 <Button
-                  variant={currentPage === item.key ? "default" : "ghost"}
+                  variant={isActive ? "default" : "ghost"}
                   className="w-full justify-start"
-                  onClick={() => onPageChange(item.key)}
+                  onClick={() => handlePageChange(item.key)}
                 >
                   <Icon className="mr-2 h-4 w-4" />
                   {item.label}
