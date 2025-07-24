@@ -76,7 +76,7 @@ const ClassStructureManagement: React.FC = () => {
       if (!profile?.school_id) return [];
       
       const { data, error } = await supabase
-        .from('academic_years' as any)
+        .from('academic_years')
         .select('*')
         .eq('school_id', profile.school_id)
         .order('start_date', { ascending: false });
@@ -93,7 +93,7 @@ const ClassStructureManagement: React.FC = () => {
       if (!profile?.school_id || !selectedAcademicYear) return [];
       
       const { data, error } = await supabase
-        .from('class_structure' as any)
+        .from('class_structure')
         .select('*')
         .eq('school_id', profile.school_id)
         .eq('academic_year_id', selectedAcademicYear)
@@ -110,7 +110,7 @@ const ClassStructureManagement: React.FC = () => {
       if (!profile?.school_id) throw new Error('School ID not found');
       
       const { error } = await supabase
-        .from('class_structure' as any)
+        .from('class_structure')
         .insert([{
           ...data,
           school_id: profile.school_id,

@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Calendar, Plus, Edit2, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Switch } from '@/components/ui/switch';
+import { format } from 'date-fns';
 
 interface AcademicYear {
   id: string;
@@ -65,13 +65,13 @@ const AcademicYearManagement: React.FC = () => {
     },
   });
 
-  const { data: academicYears, isLoading } = useQuery({
+  const { data: academicYears } = useQuery({
     queryKey: ['academic-years', profile?.school_id],
     queryFn: async () => {
       if (!profile?.school_id) return [];
       
       const { data, error } = await supabase
-        .from('academic_years' as any)
+        .from('academic_years')
         .select('*')
         .eq('school_id', profile.school_id)
         .order('start_date', { ascending: false });
@@ -87,7 +87,7 @@ const AcademicYearManagement: React.FC = () => {
       if (!profile?.school_id) throw new Error('School ID not found');
       
       const { error } = await supabase
-        .from('academic_years' as any)
+        .from('academic_years')
         .insert([{
           ...data,
           school_id: profile.school_id,
@@ -116,7 +116,7 @@ const AcademicYearManagement: React.FC = () => {
   const updateMutation = useMutation({
     mutationFn: async (data: typeof formData & { id: string }) => {
       const { error } = await supabase
-        .from('academic_years' as any)
+        .from('academic_years')
         .update({
           name: data.name,
           start_date: data.start_date,
@@ -148,7 +148,7 @@ const AcademicYearManagement: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('academic_years' as any)
+        .from('academic_years')
         .delete()
         .eq('id', id);
       
@@ -200,16 +200,6 @@ const AcademicYearManagement: React.FC = () => {
     }
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this academic year?')) {
-      deleteMutation.mutate(id);
-    }
-  };
-
-  if (isLoading) {
-    return <div>Loading academic years...</div>;
-  }
-
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -229,7 +219,7 @@ const AcademicYearManagement: React.FC = () => {
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="name">Academic Year Name</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -264,7 +254,7 @@ const AcademicYearManagement: React.FC = () => {
                   checked={formData.is_active}
                   onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                 />
-                <Label htmlFor="is_active">Active Academic Year</Label>
+                <Label htmlFor="is_active">Active</Label>
               </div>
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
@@ -288,7 +278,9 @@ const AcademicYearManagement: React.FC = () => {
                   <Calendar className="h-5 w-5" />
                   {year.name}
                   {year.is_active && (
-                    <Badge variant="default">Active</Badge>
+                    <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
+                      Active
+                    </span>
                   )}
                 </CardTitle>
                 <div className="flex gap-2">
@@ -302,7 +294,7 @@ const AcademicYearManagement: React.FC = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(year.id)}
+                    onClick={() => deleteMutation.mutate(year.id)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -311,8 +303,8 @@ const AcademicYearManagement: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="flex gap-4 text-sm text-gray-600">
-                <span>Start: {new Date(year.start_date).toLocaleDateString()}</span>
-                <span>End: {new Date(year.end_date).toLocaleDateString()}</span>
+                <span>Start: {format(new Date(year.start_date), 'MMM dd, yyyy')}</span>
+                <span>End: {format(new Date(year.end_date), 'MMM dd, yyyy')}</span>
               </div>
             </CardContent>
           </Card>

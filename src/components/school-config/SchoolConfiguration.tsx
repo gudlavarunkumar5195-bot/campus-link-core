@@ -44,6 +44,15 @@ interface FeeHead {
   is_active: boolean;
 }
 
+interface Profile {
+  id: string;
+  school_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+}
+
 const SchoolConfiguration: React.FC = () => {
   const [activeTab, setActiveTab] = useState('custom-fields');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -65,7 +74,7 @@ const SchoolConfiguration: React.FC = () => {
         .single();
       
       if (error) throw error;
-      return data;
+      return data as Profile;
     },
   });
 
@@ -81,7 +90,7 @@ const SchoolConfiguration: React.FC = () => {
         .order('label');
       
       if (error) throw error;
-      return data;
+      return data as CustomField[];
     },
     enabled: !!profile?.school_id,
   });
@@ -98,7 +107,7 @@ const SchoolConfiguration: React.FC = () => {
         .order('name');
       
       if (error) throw error;
-      return data;
+      return data as DocumentType[];
     },
     enabled: !!profile?.school_id,
   });
@@ -115,7 +124,7 @@ const SchoolConfiguration: React.FC = () => {
         .order('name');
       
       if (error) throw error;
-      return data;
+      return data as FeeHead[];
     },
     enabled: !!profile?.school_id,
   });

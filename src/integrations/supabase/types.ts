@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      academic_years: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: string
+          is_active: boolean
+          name: string
+          school_id: string | null
+          start_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean
+          name: string
+          school_id?: string | null
+          start_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          school_id?: string | null
+          start_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_years_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assignment_submissions: {
         Row: {
           assignment_id: string | null
@@ -200,6 +241,51 @@ export type Database = {
           },
         ]
       }
+      class_structure: {
+        Row: {
+          academic_year_id: string | null
+          class_name: string
+          created_at: string | null
+          id: string
+          school_id: string | null
+          sections: string[]
+          updated_at: string | null
+        }
+        Insert: {
+          academic_year_id?: string | null
+          class_name: string
+          created_at?: string | null
+          id?: string
+          school_id?: string | null
+          sections?: string[]
+          updated_at?: string | null
+        }
+        Update: {
+          academic_year_id?: string | null
+          class_name?: string
+          created_at?: string | null
+          id?: string
+          school_id?: string | null
+          sections?: string[]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_structure_academic_year_id_fkey"
+            columns: ["academic_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_structure_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           academic_year: string
@@ -244,6 +330,129 @@ export type Database = {
           },
           {
             foreignKeyName: "classes_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_fields: {
+        Row: {
+          created_at: string | null
+          field_type: string
+          id: string
+          is_required: boolean
+          label: string
+          module: string
+          options: string[]
+          school_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          field_type: string
+          id?: string
+          is_required?: boolean
+          label: string
+          module: string
+          options?: string[]
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          field_type?: string
+          id?: string
+          is_required?: boolean
+          label?: string
+          module?: string
+          options?: string[]
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_fields_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_types: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_required: boolean
+          name: string
+          school_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_required?: boolean
+          name: string
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_required?: boolean
+          name?: string
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_types_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_heads: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          school_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_heads_school_id_fkey"
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
