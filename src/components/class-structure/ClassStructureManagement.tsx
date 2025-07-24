@@ -32,6 +32,15 @@ interface AcademicYear {
   is_active: boolean;
 }
 
+interface Profile {
+  id: string;
+  school_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+}
+
 const ClassStructureManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<ClassStructure | null>(null);
@@ -57,7 +66,7 @@ const ClassStructureManagement: React.FC = () => {
         .single();
       
       if (error) throw error;
-      return data;
+      return data as Profile;
     },
   });
 
@@ -67,13 +76,13 @@ const ClassStructureManagement: React.FC = () => {
       if (!profile?.school_id) return [];
       
       const { data, error } = await supabase
-        .from('academic_years')
+        .from('academic_years' as any)
         .select('*')
         .eq('school_id', profile.school_id)
         .order('start_date', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as AcademicYear[];
     },
     enabled: !!profile?.school_id,
   });
@@ -84,14 +93,14 @@ const ClassStructureManagement: React.FC = () => {
       if (!profile?.school_id || !selectedAcademicYear) return [];
       
       const { data, error } = await supabase
-        .from('class_structure')
+        .from('class_structure' as any)
         .select('*')
         .eq('school_id', profile.school_id)
         .eq('academic_year_id', selectedAcademicYear)
         .order('class_name');
       
       if (error) throw error;
-      return data;
+      return data as ClassStructure[];
     },
     enabled: !!profile?.school_id && !!selectedAcademicYear,
   });
@@ -101,7 +110,7 @@ const ClassStructureManagement: React.FC = () => {
       if (!profile?.school_id) throw new Error('School ID not found');
       
       const { error } = await supabase
-        .from('class_structure')
+        .from('class_structure' as any)
         .insert([{
           ...data,
           school_id: profile.school_id,

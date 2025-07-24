@@ -27,6 +27,15 @@ interface AcademicYear {
   school_id: string;
 }
 
+interface Profile {
+  id: string;
+  school_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+}
+
 const AcademicYearManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
@@ -52,7 +61,7 @@ const AcademicYearManagement: React.FC = () => {
         .single();
       
       if (error) throw error;
-      return data;
+      return data as Profile;
     },
   });
 
@@ -62,13 +71,13 @@ const AcademicYearManagement: React.FC = () => {
       if (!profile?.school_id) return [];
       
       const { data, error } = await supabase
-        .from('academic_years')
+        .from('academic_years' as any)
         .select('*')
         .eq('school_id', profile.school_id)
         .order('start_date', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as AcademicYear[];
     },
     enabled: !!profile?.school_id,
   });
@@ -78,7 +87,7 @@ const AcademicYearManagement: React.FC = () => {
       if (!profile?.school_id) throw new Error('School ID not found');
       
       const { error } = await supabase
-        .from('academic_years')
+        .from('academic_years' as any)
         .insert([{
           ...data,
           school_id: profile.school_id,
@@ -107,7 +116,7 @@ const AcademicYearManagement: React.FC = () => {
   const updateMutation = useMutation({
     mutationFn: async (data: typeof formData & { id: string }) => {
       const { error } = await supabase
-        .from('academic_years')
+        .from('academic_years' as any)
         .update({
           name: data.name,
           start_date: data.start_date,
@@ -139,7 +148,7 @@ const AcademicYearManagement: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('academic_years')
+        .from('academic_years' as any)
         .delete()
         .eq('id', id);
       
