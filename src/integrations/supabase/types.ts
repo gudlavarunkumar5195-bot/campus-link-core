@@ -539,6 +539,7 @@ export type Database = {
           email: string
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
+          employee_id: string | null
           first_name: string
           gender: Database["public"]["Enums"]["gender"] | null
           id: string
@@ -546,6 +547,7 @@ export type Database = {
           last_name: string
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
+          roll_number: string | null
           school_id: string | null
           updated_at: string | null
         }
@@ -557,6 +559,7 @@ export type Database = {
           email: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          employee_id?: string | null
           first_name: string
           gender?: Database["public"]["Enums"]["gender"] | null
           id: string
@@ -564,6 +567,7 @@ export type Database = {
           last_name: string
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          roll_number?: string | null
           school_id?: string | null
           updated_at?: string | null
         }
@@ -575,6 +579,7 @@ export type Database = {
           email?: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          employee_id?: string | null
           first_name?: string
           gender?: Database["public"]["Enums"]["gender"] | null
           id?: string
@@ -582,6 +587,7 @@ export type Database = {
           last_name?: string
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          roll_number?: string | null
           school_id?: string | null
           updated_at?: string | null
         }
@@ -630,6 +636,47 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      staff: {
+        Row: {
+          created_at: string | null
+          employee_id: string
+          hire_date: string
+          id: string
+          position: string
+          profile_id: string | null
+          salary: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          employee_id: string
+          hire_date?: string
+          id?: string
+          position: string
+          profile_id?: string | null
+          salary?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          employee_id?: string
+          hire_date?: string
+          id?: string
+          position?: string
+          profile_id?: string | null
+          salary?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       students: {
         Row: {
@@ -882,6 +929,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_default_password: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["user_role"]

@@ -16,7 +16,8 @@ import {
   Plus,
   CalendarDays,
   ClipboardList,
-  Cog
+  Cog,
+  UserPlus
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -91,6 +92,12 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
       navigate('/users');
     } else if (page === 'settings' && isSuperAdmin) {
       navigate('/settings');
+    } else if (page === 'add-student') {
+      navigate('/admin/add-student');
+    } else if (page === 'add-teacher') {
+      navigate('/admin/add-teacher');
+    } else if (page === 'add-staff') {
+      navigate('/admin/add-staff');
     } else {
       onPageChange(page);
     }
@@ -114,6 +121,9 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
     if (userRole === 'admin') {
       return [
         ...baseItems,
+        { key: 'add-student', label: 'Add Student', icon: UserPlus },
+        { key: 'add-teacher', label: 'Add Teacher', icon: UserPlus },
+        { key: 'add-staff', label: 'Add Staff', icon: UserPlus },
         { key: 'users', label: 'Users', icon: Users },
         { key: 'classes', label: 'Classes', icon: BookOpen },
         { key: 'subjects', label: 'Subjects', icon: GraduationCap },
@@ -148,8 +158,8 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
   };
 
   return (
-    <div className="bg-white shadow-sm border-r h-full flex flex-col">
-      <div className="p-6 border-b">
+    <div className="bg-slate-800 shadow-sm border-r border-slate-700 h-full flex flex-col">
+      <div className="p-6 border-b border-slate-700">
         <div className="flex items-center space-x-3 mb-3">
           {school?.logo_url ? (
             <img 
@@ -158,27 +168,27 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
               className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center">
               <Building2 className="h-4 w-4 text-white" />
             </div>
           )}
           <div>
-            <h1 className="text-xl font-bold text-gray-900">
+            <h1 className="text-xl font-bold text-amber-600">
               {school?.name || 'School ERP'}
             </h1>
             {isSuperAdmin && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800">
                 Super Admin
               </Badge>
             )}
           </div>
         </div>
         {profile && (
-          <div className="text-sm text-gray-600">
-            <p className="font-medium">
+          <div className="text-sm text-gray-400">
+            <p className="font-medium text-white">
               {profile.first_name} {profile.last_name}
             </p>
-            <p className="text-xs capitalize">{profile.role}</p>
+            <p className="text-xs capitalize text-amber-400">{profile.role}</p>
           </div>
         )}
       </div>
@@ -191,13 +201,20 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
               (item.key === 'schools' && window.location.pathname === '/schools') ||
               (item.key === 'create-school' && window.location.pathname === '/create-school') ||
               (item.key === 'users' && window.location.pathname === '/users') ||
-              (item.key === 'settings' && window.location.pathname === '/settings');
+              (item.key === 'settings' && window.location.pathname === '/settings') ||
+              (item.key === 'add-student' && window.location.pathname === '/admin/add-student') ||
+              (item.key === 'add-teacher' && window.location.pathname === '/admin/add-teacher') ||
+              (item.key === 'add-staff' && window.location.pathname === '/admin/add-staff');
             
             return (
               <li key={item.key}>
                 <Button
                   variant={isActive ? "default" : "ghost"}
-                  className="w-full justify-start"
+                  className={`w-full justify-start ${
+                    isActive 
+                      ? "bg-amber-600 hover:bg-amber-700 text-white" 
+                      : "text-gray-300 hover:text-white hover:bg-slate-700"
+                  }`}
                   onClick={() => handlePageChange(item.key)}
                 >
                   <Icon className="mr-2 h-4 w-4" />
@@ -209,10 +226,10 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
         </ul>
       </nav>
       
-      <div className="p-4 border-t">
+      <div className="p-4 border-t border-slate-700">
         <Button
           variant="ghost"
-          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+          className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-900/20"
           onClick={handleLogout}
         >
           <LogOut className="mr-2 h-4 w-4" />
