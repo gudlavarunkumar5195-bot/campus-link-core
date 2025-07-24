@@ -13,7 +13,10 @@ import {
   Settings,
   LogOut,
   Building2,
-  Plus
+  Plus,
+  CalendarDays,
+  ClipboardList,
+  Cog
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -114,9 +117,12 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
         { key: 'users', label: 'Users', icon: Users },
         { key: 'classes', label: 'Classes', icon: BookOpen },
         { key: 'subjects', label: 'Subjects', icon: GraduationCap },
+        { key: 'academic-years', label: 'Academic Years', icon: CalendarDays },
+        { key: 'class-structure', label: 'Class Structure', icon: ClipboardList },
         { key: 'timetable', label: 'Timetable', icon: Calendar },
         { key: 'attendance', label: 'Attendance', icon: UserCheck },
         { key: 'grades', label: 'Grades', icon: FileText },
+        { key: 'school-config', label: 'School Config', icon: Cog },
         { key: 'settings', label: 'Settings', icon: Settings },
       ];
     }
