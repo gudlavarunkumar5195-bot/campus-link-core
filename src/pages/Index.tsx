@@ -46,31 +46,26 @@ const Index = () => {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard userRole={profile.role} />;
+      case 'academic-years':
+      case 'class-structure':
+      case 'school-config':
+      case 'users':
+      case 'classes':
+      case 'subjects':
+      case 'timetable':
+      case 'attendance':
+      case 'grades':
+      case 'assignments':
+      case 'settings':
+        return <Dashboard userRole={profile.role} currentPage={currentPage} />;
       case 'schools':
         return <SchoolsManagement />;
       case 'create-school':
         // This will be handled by the separate CreateSchool page
         window.location.href = '/create-school';
         return null;
-      case 'users':
-        return <div className="p-6">Users management coming soon...</div>;
-      case 'classes':
-        return <div className="p-6">Classes management coming soon...</div>;
-      case 'subjects':
-        return <div className="p-6">Subjects management coming soon...</div>;
-      case 'timetable':
-        return <div className="p-6">Timetable management coming soon...</div>;
-      case 'attendance':
-        return <div className="p-6">Attendance management coming soon...</div>;
-      case 'grades':
-        return <div className="p-6">Grades management coming soon...</div>;
-      case 'assignments':
-        return <div className="p-6">Assignments management coming soon...</div>;
-      case 'settings':
-        return <div className="p-6">Settings coming soon...</div>;
       default:
-        return <Dashboard userRole={profile.role} />;
+        return <Dashboard userRole={profile.role} currentPage="dashboard" />;
     }
   };
 
