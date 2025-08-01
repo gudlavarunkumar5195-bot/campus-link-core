@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,12 +10,28 @@ import { ArrowLeft, UserPlus, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+type Gender = 'male' | 'female' | 'other';
+
+interface StaffFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  employeeId: string;
+  position: string;
+  hireDate: string;
+  salary: string;
+  dateOfBirth: string;
+  gender: Gender | '';
+  address: string;
+}
+
 const AddStaff = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<StaffFormData>({
     firstName: '',
     lastName: '',
     email: '',
@@ -50,8 +65,12 @@ const AddStaff = () => {
     );
   }
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof StaffFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleGenderChange = (value: Gender) => {
+    setFormData(prev => ({ ...prev, gender: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,7 +116,7 @@ const AddStaff = () => {
           phone: formData.phone,
           employee_id: formData.employeeId,
           date_of_birth: formData.dateOfBirth,
-          gender: formData.gender,
+          gender: formData.gender || null,
           address: formData.address
         })
         .eq('id', authData.user.id);
@@ -254,7 +273,7 @@ const AddStaff = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="gender" className="text-red-700 font-semibold">Gender</Label>
-                  <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+                  <Select value={formData.gender} onValueChange={handleGenderChange}>
                     <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>

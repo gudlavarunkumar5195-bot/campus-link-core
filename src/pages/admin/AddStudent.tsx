@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,12 +11,32 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 
+type Gender = 'male' | 'female' | 'other';
+
+interface StudentFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  classId: string;
+  studentId: string;
+  rollNumber: string;
+  parentName: string;
+  parentPhone: string;
+  parentEmail: string;
+  admissionDate: string;
+  dateOfBirth: string;
+  gender: Gender | '';
+  address: string;
+  medicalInfo: string;
+}
+
 const AddStudent = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<StudentFormData>({
     firstName: '',
     lastName: '',
     email: '',
@@ -71,8 +90,12 @@ const AddStudent = () => {
     );
   }
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof StudentFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleGenderChange = (value: Gender) => {
+    setFormData(prev => ({ ...prev, gender: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,7 +144,7 @@ const AddStudent = () => {
           phone: formData.phone,
           roll_number: formData.rollNumber,
           date_of_birth: formData.dateOfBirth,
-          gender: formData.gender,
+          gender: formData.gender || null,
           address: formData.address
         })
         .eq('id', authData.user.id);
@@ -268,7 +291,7 @@ const AddStudent = () => {
                 </div>
                 <div>
                   <Label htmlFor="gender" className="text-red-700 font-semibold">Gender</Label>
-                  <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+                  <Select value={formData.gender} onValueChange={handleGenderChange}>
                     <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
