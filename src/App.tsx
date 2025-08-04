@@ -40,9 +40,9 @@ const App = () => (
           <Route path="/admin/add-staff" element={<AddStaff />} />
           <Route path="/classes" element={<Classes />} />
           <Route path="/school-config" element={<SchoolConfig />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-          <Route path="/student/dashboard" element={<StudentDashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+          <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
