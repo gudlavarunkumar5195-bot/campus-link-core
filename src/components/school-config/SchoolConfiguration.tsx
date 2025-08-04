@@ -2,23 +2,19 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, Plus, Edit2, Trash2 } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, Edit2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
+import CustomFieldForm from './CustomFieldForm';
+import DocumentTypeForm from './DocumentTypeForm';
+import FeeHeadForm from './FeeHeadForm';
 
 interface CustomField {
   id: string;
@@ -58,8 +54,6 @@ const SchoolConfiguration: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'custom-field' | 'document-type' | 'fee-head'>('custom-field');
   const [editingItem, setEditingItem] = useState<any>(null);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -129,33 +123,29 @@ const SchoolConfiguration: React.FC = () => {
     enabled: !!profile?.school_id,
   });
 
-  const createCustomFieldMutation = useMutation({
-    mutationFn: async (data: Omit<CustomField, 'id'>) => {
-      if (!profile?.school_id) throw new Error('School ID not found');
-      
-      const { error } = await supabase
-        .from('custom_fields')
-        .insert([{
-          ...data,
-          school_id: profile.school_id,
-        }]);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom-fields'] });
-      setIsDialogOpen(false);
-      toast({
-        title: 'Success',
-        description: 'Custom field created successfully',
-      });
-    },
-  });
-
   const openDialog = (type: 'custom-field' | 'document-type' | 'fee-head', item?: any) => {
     setDialogType(type);
     setEditingItem(item);
     setIsDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setEditingItem(null);
+  };
+
+  const getDialogTitle = () => {
+    const action = editingItem ? 'Edit' : 'Create';
+    switch (dialogType) {
+      case 'custom-field':
+        return `${action} Custom Field`;
+      case 'document-type':
+        return `${action} Document Type`;
+      case 'fee-head':
+        return `${action} Fee Head`;
+      default:
+        return 'Form';
+    }
   };
 
   return (
@@ -203,6 +193,11 @@ const SchoolConfiguration: React.FC = () => {
                     <span>Type: {field.field_type}</span>
                     <span>Required: {field.is_required ? 'Yes' : 'No'}</span>
                   </div>
+                  {field.options.length > 0 && (
+                    <div className="mt-2 text-sm text-gray-600">
+                      Options: {field.options.join(', ')}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -290,15 +285,36 @@ const SchoolConfiguration: React.FC = () => {
       </Tabs>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {editingItem ? 'Edit' : 'Create'} {dialogType.replace('-', ' ')}
-            </DialogTitle>
+            <DialogTitle>{getDialogTitle()}</DialogTitle>
           </DialogHeader>
-          <div className="text-center text-gray-500">
-            Configuration form will be implemented here
-          </div>
+          
+          {profile?.school_id && (
+            <>
+              {dialogType === 'custom-field' && (
+                <CustomFieldForm
+                  field={editingItem}
+                  onClose={closeDialog}
+                  schoolId={profile.school_id}
+                />
+              )}
+              {dialogType === 'document-type' && (
+                <DocumentTypeForm
+                  documentType={editingItem}
+                  onClose={closeDialog}
+                  schoolId={profile.school_id}
+                />
+              )}
+              {dialogType === 'fee-head' && (
+                <FeeHeadForm
+                  feeHead={editingItem}
+                  onClose={closeDialog}
+                  schoolId={profile.school_id}
+                />
+              )}
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>

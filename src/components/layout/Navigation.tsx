@@ -17,7 +17,8 @@ import {
   CalendarDays,
   ClipboardList,
   Cog,
-  UserPlus
+  UserPlus,
+  TrendingUp
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -78,6 +79,7 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
         title: "Success",
         description: "Logged out successfully",
       });
+      navigate('/');
     }
   };
 
@@ -88,6 +90,8 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
       navigate('/schools');
     } else if (page === 'create-school') {
       navigate('/create-school');
+    } else if (page === 'analytics') {
+      navigate('/analytics');
     } else if (page === 'users' && isSuperAdmin) {
       navigate('/users');
     } else if (page === 'settings' && isSuperAdmin) {
@@ -111,6 +115,7 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
     if (isSuperAdmin) {
       return [
         ...baseItems,
+        { key: 'analytics', label: 'Analytics', icon: TrendingUp },
         { key: 'schools', label: 'Schools', icon: Building2 },
         { key: 'create-school', label: 'Create School', icon: Plus },
         { key: 'users', label: 'Users', icon: Users },
@@ -200,6 +205,7 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
             const isActive = currentPage === item.key || 
               (item.key === 'schools' && window.location.pathname === '/schools') ||
               (item.key === 'create-school' && window.location.pathname === '/create-school') ||
+              (item.key === 'analytics' && window.location.pathname === '/analytics') ||
               (item.key === 'users' && window.location.pathname === '/users') ||
               (item.key === 'settings' && window.location.pathname === '/settings') ||
               (item.key === 'add-student' && window.location.pathname === '/admin/add-student') ||
