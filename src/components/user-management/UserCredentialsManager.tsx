@@ -28,6 +28,8 @@ interface UserCredential {
   };
 }
 
+type UserRole = 'admin' | 'teacher' | 'student';
+
 const UserCredentialsManager: React.FC<UserCredentialsManagerProps> = ({ schoolId }) => {
   const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({});
   const { toast } = useToast();
@@ -68,7 +70,7 @@ const UserCredentialsManager: React.FC<UserCredentialsManagerProps> = ({ schoolI
 
       // Generate credentials for each profile
       for (const profile of profiles || []) {
-        const username = await generateUsername(profile.first_name, profile.last_name, profile.role);
+        const username = await generateUsername(profile.first_name, profile.last_name, profile.role as UserRole);
         const defaultPassword = generateDefaultPassword();
 
         const { error } = await supabase
@@ -100,7 +102,7 @@ const UserCredentialsManager: React.FC<UserCredentialsManagerProps> = ({ schoolI
     },
   });
 
-  const generateUsername = async (firstName: string, lastName: string, role: string) => {
+  const generateUsername = async (firstName: string, lastName: string, role: UserRole) => {
     const { data, error } = await supabase.rpc('generate_username', {
       first_name: firstName,
       last_name: lastName,
