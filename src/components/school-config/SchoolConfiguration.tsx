@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit2 } from 'lucide-react';
+import { Plus, Edit2, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -18,6 +19,7 @@ import BulkUploadForm from '../bulk-upload/BulkUploadForm';
 import SchoolSettingsForm from './SchoolSettingsForm';
 import UserCredentialsManager from '../user-management/UserCredentialsManager';
 import { useAutoCredentials } from '@/hooks/useAutoCredentials';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface CustomField {
   id: string;
@@ -43,15 +45,6 @@ interface FeeHead {
   is_active: boolean;
 }
 
-interface Profile {
-  id: string;
-  school_id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  role: string;
-}
-
 const SchoolConfiguration: React.FC = () => {
   const [activeTab, setActiveTab] = useState('settings');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -75,6 +68,7 @@ const SchoolConfiguration: React.FC = () => {
     },
   });
 
+  // Only use auto credentials if we have a school_id
   useAutoCredentials(profile?.school_id || '');
 
   const { data: customFields } = useQuery({
@@ -153,6 +147,20 @@ const SchoolConfiguration: React.FC = () => {
     }
   };
 
+  // Show warning if no school_id
+  if (!profile?.school_id) {
+    return (
+      <div className="p-6 bg-white min-h-screen">
+        <Alert className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            No school association found. Please contact your administrator to associate your account with a school.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 bg-white min-h-screen">
       <div className="flex justify-between items-center mb-6">
@@ -170,27 +178,24 @@ const SchoolConfiguration: React.FC = () => {
         </TabsList>
 
         <TabsContent value="settings" className="space-y-4">
-          {profile?.school_id && (
-            <SchoolSettingsForm schoolId={profile.school_id} />
-          )}
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-900">School Settings</h2>
+          </div>
+          <SchoolSettingsForm schoolId={profile.school_id} />
         </TabsContent>
 
         <TabsContent value="bulk-upload" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-900">Bulk Upload</h2>
           </div>
-          {profile?.school_id && (
-            <BulkUploadForm schoolId={profile.school_id} />
-          )}
+          <BulkUploadForm schoolId={profile.school_id} />
         </TabsContent>
 
         <TabsContent value="user-credentials" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-900">User Credentials</h2>
           </div>
-          {profile?.school_id && (
-            <UserCredentialsManager schoolId={profile.school_id} />
-          )}
+          <UserCredentialsManager schoolId={profile.school_id} />
         </TabsContent>
 
         <TabsContent value="custom-fields" className="space-y-4">
@@ -203,36 +208,44 @@ const SchoolConfiguration: React.FC = () => {
           </div>
           
           <div className="grid gap-4">
-            {customFields?.map((field) => (
-              <Card key={field.id} className="bg-white border border-gray-200">
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg text-gray-900">{field.label}</CardTitle>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openDialog('custom-field', field)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-4 text-sm text-gray-600">
-                    <span>Module: {field.module}</span>
-                    <span>Type: {field.field_type}</span>
-                    <span>Required: {field.is_required ? 'Yes' : 'No'}</span>
-                  </div>
-                  {field.options.length > 0 && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      Options: {field.options.join(', ')}
-                    </div>
-                  )}
+            {customFields?.length === 0 ? (
+              <Card className="bg-white border border-gray-200">
+                <CardContent className="p-6 text-center text-gray-500">
+                  No custom fields configured yet. Click "Add Custom Field" to create one.
                 </CardContent>
               </Card>
-            ))}
+            ) : (
+              customFields?.map((field) => (
+                <Card key={field.id} className="bg-white border border-gray-200">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-lg text-gray-900">{field.label}</CardTitle>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openDialog('custom-field', field)}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-4 text-sm text-gray-600">
+                      <span>Module: {field.module}</span>
+                      <span>Type: {field.field_type}</span>
+                      <span>Required: {field.is_required ? 'Yes' : 'No'}</span>
+                    </div>
+                    {field.options.length > 0 && (
+                      <div className="mt-2 text-sm text-gray-600">
+                        Options: {field.options.join(', ')}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
 
@@ -246,32 +259,40 @@ const SchoolConfiguration: React.FC = () => {
           </div>
           
           <div className="grid gap-4">
-            {documentTypes?.map((docType) => (
-              <Card key={docType.id} className="bg-white border border-gray-200">
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg text-gray-900">{docType.name}</CardTitle>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openDialog('document-type', docType)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-4 text-sm text-gray-600">
-                    <span>Required: {docType.is_required ? 'Yes' : 'No'}</span>
-                  </div>
-                  {docType.description && (
-                    <p className="text-sm text-gray-600 mt-2">{docType.description}</p>
-                  )}
+            {documentTypes?.length === 0 ? (
+              <Card className="bg-white border border-gray-200">
+                <CardContent className="p-6 text-center text-gray-500">
+                  No document types configured yet. Click "Add Document Type" to create one.
                 </CardContent>
               </Card>
-            ))}
+            ) : (
+              documentTypes?.map((docType) => (
+                <Card key={docType.id} className="bg-white border border-gray-200">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-lg text-gray-900">{docType.name}</CardTitle>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openDialog('document-type', docType)}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-4 text-sm text-gray-600">
+                      <span>Required: {docType.is_required ? 'Yes' : 'No'}</span>
+                    </div>
+                    {docType.description && (
+                      <p className="text-sm text-gray-600 mt-2">{docType.description}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
 
@@ -285,33 +306,41 @@ const SchoolConfiguration: React.FC = () => {
           </div>
           
           <div className="grid gap-4">
-            {feeHeads?.map((feeHead) => (
-              <Card key={feeHead.id} className="bg-white border border-gray-200">
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg text-gray-900">{feeHead.name}</CardTitle>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openDialog('fee-head', feeHead)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-4 text-sm text-gray-600">
-                    <span>Amount: ${feeHead.amount}</span>
-                    <span>Active: {feeHead.is_active ? 'Yes' : 'No'}</span>
-                  </div>
-                  {feeHead.description && (
-                    <p className="text-sm text-gray-600 mt-2">{feeHead.description}</p>
-                  )}
+            {feeHeads?.length === 0 ? (
+              <Card className="bg-white border border-gray-200">
+                <CardContent className="p-6 text-center text-gray-500">
+                  No fee heads configured yet. Click "Add Fee Head" to create one.
                 </CardContent>
               </Card>
-            ))}
+            ) : (
+              feeHeads?.map((feeHead) => (
+                <Card key={feeHead.id} className="bg-white border border-gray-200">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-lg text-gray-900">{feeHead.name}</CardTitle>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openDialog('fee-head', feeHead)}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-4 text-sm text-gray-600">
+                      <span>Amount: ${feeHead.amount}</span>
+                      <span>Active: {feeHead.is_active ? 'Yes' : 'No'}</span>
+                    </div>
+                    {feeHead.description && (
+                      <p className="text-sm text-gray-600 mt-2">{feeHead.description}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
       </Tabs>
@@ -322,31 +351,29 @@ const SchoolConfiguration: React.FC = () => {
             <DialogTitle className="text-gray-900">{getDialogTitle()}</DialogTitle>
           </DialogHeader>
           
-          {profile?.school_id && (
-            <>
-              {dialogType === 'custom-field' && (
-                <CustomFieldForm
-                  field={editingItem}
-                  onClose={closeDialog}
-                  schoolId={profile.school_id}
-                />
-              )}
-              {dialogType === 'document-type' && (
-                <DocumentTypeForm
-                  documentType={editingItem}
-                  onClose={closeDialog}
-                  schoolId={profile.school_id}
-                />
-              )}
-              {dialogType === 'fee-head' && (
-                <FeeHeadForm
-                  feeHead={editingItem}
-                  onClose={closeDialog}
-                  schoolId={profile.school_id}
-                />
-              )}
-            </>
-          )}
+          <>
+            {dialogType === 'custom-field' && (
+              <CustomFieldForm
+                field={editingItem}
+                onClose={closeDialog}
+                schoolId={profile.school_id}
+              />
+            )}
+            {dialogType === 'document-type' && (
+              <DocumentTypeForm
+                documentType={editingItem}
+                onClose={closeDialog}
+                schoolId={profile.school_id}
+              />
+            )}
+            {dialogType === 'fee-head' && (
+              <FeeHeadForm
+                feeHead={editingItem}
+                onClose={closeDialog}
+                schoolId={profile.school_id}
+              />
+            )}
+          </>
         </DialogContent>
       </Dialog>
     </div>

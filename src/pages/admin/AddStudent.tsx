@@ -106,26 +106,33 @@ const AddStudent = () => {
       // Generate default password
       const defaultPassword = `School${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
       
-      // Create user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: defaultPassword,
-        email_confirm: true,
-        user_metadata: {
+      // First create the user account manually in the profiles table
+      const profileId = crypto.randomUUID();
+      
+      // Create profile record first
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: profileId,
           first_name: formData.firstName,
           last_name: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
           role: 'student',
-          school_id: profile.school_id
-        }
-      });
+          school_id: profile.school_id,
+          roll_number: formData.rollNumber,
+          date_of_birth: formData.dateOfBirth || null,
+          gender: formData.gender || null,
+          address: formData.address
+        });
 
-      if (authError) throw authError;
+      if (profileError) throw profileError;
 
       // Create student record
       const { error: studentError } = await supabase
         .from('students')
         .insert({
-          profile_id: authData.user.id,
+          profile_id: profileId,
           student_id: formData.studentId,
           class_id: formData.classId,
           admission_date: formData.admissionDate,
@@ -137,26 +144,30 @@ const AddStudent = () => {
 
       if (studentError) throw studentError;
 
-      // Update profile with additional info
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          phone: formData.phone,
-          roll_number: formData.rollNumber,
-          date_of_birth: formData.dateOfBirth,
-          gender: formData.gender || null,
-          address: formData.address
-        })
-        .eq('id', authData.user.id);
-
-      if (profileError) throw profileError;
-
       toast({
         title: "Success",
-        description: `Student added successfully! Default password: ${defaultPassword}`,
+        description: `Student added successfully! Login credentials will be generated automatically.`,
       });
 
-      navigate('/');
+      // Reset form
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        classId: '',
+        studentId: '',
+        rollNumber: '',
+        parentName: '',
+        parentPhone: '',
+        parentEmail: '',
+        admissionDate: new Date().toISOString().split('T')[0],
+        dateOfBirth: '',
+        gender: '',
+        address: '',
+        medicalInfo: ''
+      });
+
     } catch (error: any) {
       toast({
         title: "Error",
