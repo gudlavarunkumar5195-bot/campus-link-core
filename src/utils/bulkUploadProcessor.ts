@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface BulkUploadRow {
   [key: string]: string | number | boolean;
@@ -29,10 +30,14 @@ export class BulkUploadProcessor {
         // Validate and type the gender field
         const gender = this.validateGender(row.gender as string);
         
+        // Generate a UUID for the profile
+        const profileId = uuidv4();
+        
         // Create profile first
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .insert({
+            id: profileId,
             first_name: row.first_name as string,
             last_name: row.last_name as string,
             email: row.email as string,
@@ -91,10 +96,14 @@ export class BulkUploadProcessor {
         // Validate and type the gender field
         const gender = this.validateGender(row.gender as string);
         
+        // Generate a UUID for the profile
+        const profileId = uuidv4();
+        
         // Create profile first
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .insert({
+            id: profileId,
             first_name: row.first_name as string,
             last_name: row.last_name as string,
             email: row.email as string,
@@ -152,10 +161,14 @@ export class BulkUploadProcessor {
         // Validate and type the gender field
         const gender = this.validateGender(row.gender as string);
         
+        // Generate a UUID for the profile
+        const profileId = uuidv4();
+        
         // Create profile first
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .insert({
+            id: profileId,
             first_name: row.first_name as string,
             last_name: row.last_name as string,
             email: row.email as string,
