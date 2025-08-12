@@ -26,6 +26,9 @@ export class BulkUploadProcessor {
 
     for (const row of data) {
       try {
+        // Validate and type the gender field
+        const gender = this.validateGender(row.gender as string);
+        
         // Create profile first
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -34,10 +37,10 @@ export class BulkUploadProcessor {
             last_name: row.last_name as string,
             email: row.email as string,
             phone: row.phone as string,
-            role: 'student',
+            role: 'student' as const,
             school_id: this.schoolId,
             date_of_birth: row.date_of_birth as string,
-            gender: row.gender as string,
+            gender: gender,
             address: row.address as string,
           })
           .select()
@@ -85,6 +88,9 @@ export class BulkUploadProcessor {
 
     for (const row of data) {
       try {
+        // Validate and type the gender field
+        const gender = this.validateGender(row.gender as string);
+        
         // Create profile first
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -93,10 +99,10 @@ export class BulkUploadProcessor {
             last_name: row.last_name as string,
             email: row.email as string,
             phone: row.phone as string,
-            role: 'teacher',
+            role: 'teacher' as const,
             school_id: this.schoolId,
             date_of_birth: row.date_of_birth as string,
-            gender: row.gender as string,
+            gender: gender,
             address: row.address as string,
           })
           .select()
@@ -143,6 +149,9 @@ export class BulkUploadProcessor {
 
     for (const row of data) {
       try {
+        // Validate and type the gender field
+        const gender = this.validateGender(row.gender as string);
+        
         // Create profile first
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -151,10 +160,10 @@ export class BulkUploadProcessor {
             last_name: row.last_name as string,
             email: row.email as string,
             phone: row.phone as string,
-            role: 'admin', // Staff gets admin role
+            role: 'admin' as const, // Staff gets admin role
             school_id: this.schoolId,
             date_of_birth: row.date_of_birth as string,
-            gender: row.gender as string,
+            gender: gender,
             address: row.address as string,
           })
           .select()
@@ -191,6 +200,17 @@ export class BulkUploadProcessor {
       failureCount,
       errors,
     };
+  }
+
+  private validateGender(gender: string): 'male' | 'female' | 'other' {
+    const normalizedGender = gender?.toLowerCase().trim();
+    if (normalizedGender === 'male' || normalizedGender === 'm') {
+      return 'male';
+    } else if (normalizedGender === 'female' || normalizedGender === 'f') {
+      return 'female';
+    } else {
+      return 'other';
+    }
   }
 
   private async generateCredentials(profileId: string, firstName: string, lastName: string, role: 'student' | 'teacher' | 'admin') {
