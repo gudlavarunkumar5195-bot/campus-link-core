@@ -42,46 +42,48 @@ const AuthForm: React.FC = () => {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center text-amber-600">
-          School ERP Login
-        </CardTitle>
-        <CardDescription className="text-center">
-          Enter your credentials to access your school account
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="email" className="text-red-700 font-semibold">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
-            />
-          </div>
-          <div>
-            <Label htmlFor="password" className="text-red-700 font-semibold">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
-            />
-          </div>
-          <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign In
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <Card className="w-full max-w-md bg-white border-gray-200 shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center text-amber-600">
+            School ERP Login
+          </CardTitle>
+          <CardDescription className="text-center text-gray-600">
+            Enter your credentials to access your school account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="email" className="text-red-700 font-semibold">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
+              />
+            </div>
+            <div>
+              <Label htmlFor="password" className="text-red-700 font-semibold">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
+              />
+            </div>
+            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sign In
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

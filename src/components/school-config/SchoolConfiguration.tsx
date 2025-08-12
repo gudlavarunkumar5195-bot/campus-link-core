@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +14,9 @@ import {
 import CustomFieldForm from './CustomFieldForm';
 import DocumentTypeForm from './DocumentTypeForm';
 import FeeHeadForm from './FeeHeadForm';
+import BulkUploadForm from '../bulk-upload/BulkUploadForm';
+import SchoolSettingsForm from './SchoolSettingsForm';
+import UserCredentialsManager from '../user-management/UserCredentialsManager';
 
 interface CustomField {
   id: string;
@@ -50,7 +52,7 @@ interface Profile {
 }
 
 const SchoolConfiguration: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('custom-fields');
+  const [activeTab, setActiveTab] = useState('settings');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'custom-field' | 'document-type' | 'fee-head'>('custom-field');
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -149,22 +151,49 @@ const SchoolConfiguration: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-white min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">School Configuration</h1>
+        <h1 className="text-2xl font-bold text-gray-900">School Configuration</h1>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-6 bg-white border">
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="bulk-upload">Bulk Upload</TabsTrigger>
+          <TabsTrigger value="user-credentials">User Credentials</TabsTrigger>
           <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
           <TabsTrigger value="document-types">Document Types</TabsTrigger>
           <TabsTrigger value="fee-heads">Fee Heads</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="settings" className="space-y-4">
+          {profile?.school_id && (
+            <SchoolSettingsForm schoolId={profile.school_id} />
+          )}
+        </TabsContent>
+
+        <TabsContent value="bulk-upload" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-900">Bulk Upload</h2>
+          </div>
+          {profile?.school_id && (
+            <BulkUploadForm schoolId={profile.school_id} />
+          )}
+        </TabsContent>
+
+        <TabsContent value="user-credentials" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-900">User Credentials</h2>
+          </div>
+          {profile?.school_id && (
+            <UserCredentialsManager schoolId={profile.school_id} />
+          )}
+        </TabsContent>
+
         <TabsContent value="custom-fields" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Custom Fields</h2>
-            <Button onClick={() => openDialog('custom-field')}>
+            <h2 className="text-xl font-semibold text-gray-900">Custom Fields</h2>
+            <Button onClick={() => openDialog('custom-field')} className="bg-green-600 hover:bg-green-700">
               <Plus className="mr-2 h-4 w-4" />
               Add Custom Field
             </Button>
@@ -172,10 +201,10 @@ const SchoolConfiguration: React.FC = () => {
           
           <div className="grid gap-4">
             {customFields?.map((field) => (
-              <Card key={field.id}>
+              <Card key={field.id} className="bg-white border border-gray-200">
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">{field.label}</CardTitle>
+                    <CardTitle className="text-lg text-gray-900">{field.label}</CardTitle>
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"
@@ -206,8 +235,8 @@ const SchoolConfiguration: React.FC = () => {
 
         <TabsContent value="document-types" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Document Types</h2>
-            <Button onClick={() => openDialog('document-type')}>
+            <h2 className="text-xl font-semibold text-gray-900">Document Types</h2>
+            <Button onClick={() => openDialog('document-type')} className="bg-green-600 hover:bg-green-700">
               <Plus className="mr-2 h-4 w-4" />
               Add Document Type
             </Button>
@@ -215,10 +244,10 @@ const SchoolConfiguration: React.FC = () => {
           
           <div className="grid gap-4">
             {documentTypes?.map((docType) => (
-              <Card key={docType.id}>
+              <Card key={docType.id} className="bg-white border border-gray-200">
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">{docType.name}</CardTitle>
+                    <CardTitle className="text-lg text-gray-900">{docType.name}</CardTitle>
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"
@@ -245,8 +274,8 @@ const SchoolConfiguration: React.FC = () => {
 
         <TabsContent value="fee-heads" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Fee Heads</h2>
-            <Button onClick={() => openDialog('fee-head')}>
+            <h2 className="text-xl font-semibold text-gray-900">Fee Heads</h2>
+            <Button onClick={() => openDialog('fee-head')} className="bg-green-600 hover:bg-green-700">
               <Plus className="mr-2 h-4 w-4" />
               Add Fee Head
             </Button>
@@ -254,10 +283,10 @@ const SchoolConfiguration: React.FC = () => {
           
           <div className="grid gap-4">
             {feeHeads?.map((feeHead) => (
-              <Card key={feeHead.id}>
+              <Card key={feeHead.id} className="bg-white border border-gray-200">
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">{feeHead.name}</CardTitle>
+                    <CardTitle className="text-lg text-gray-900">{feeHead.name}</CardTitle>
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"
@@ -285,9 +314,9 @@ const SchoolConfiguration: React.FC = () => {
       </Tabs>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-white">
           <DialogHeader>
-            <DialogTitle>{getDialogTitle()}</DialogTitle>
+            <DialogTitle className="text-gray-900">{getDialogTitle()}</DialogTitle>
           </DialogHeader>
           
           {profile?.school_id && (

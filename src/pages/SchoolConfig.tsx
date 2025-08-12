@@ -13,9 +13,9 @@ const SchoolConfig = () => {
 
   if (!user || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+          <h2 className="text-2xl font-bold mb-2 text-gray-900">Access Denied</h2>
           <p className="text-gray-600">Please log in to continue.</p>
         </div>
       </div>
@@ -27,11 +27,11 @@ const SchoolConfig = () => {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Card className="w-full max-w-md bg-white border-gray-200">
           <CardContent className="text-center py-8">
             <Settings className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+            <h2 className="text-2xl font-bold mb-2 text-gray-900">Access Denied</h2>
             <p className="text-gray-600 mb-4">
               Only administrators can access school configuration.
             </p>
@@ -45,7 +45,7 @@ const SchoolConfig = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
@@ -58,8 +58,8 @@ const SchoolConfig = () => {
               <span>Back</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">School Configuration</h1>
-              <p className="text-gray-600">Configure school settings and custom fields</p>
+              <h1 className="text-3xl font-bold text-gray-900">School Configuration</h1>
+              <p className="text-gray-600">Configure school settings and manage users</p>
             </div>
           </div>
         </div>

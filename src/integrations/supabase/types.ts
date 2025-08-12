@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
@@ -237,6 +237,66 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_uploads: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_log: Json | null
+          failed_records: number | null
+          file_name: string
+          id: string
+          school_id: string | null
+          status: string | null
+          successful_records: number | null
+          total_records: number
+          upload_type: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_log?: Json | null
+          failed_records?: number | null
+          file_name: string
+          id?: string
+          school_id?: string | null
+          status?: string | null
+          successful_records?: number | null
+          total_records: number
+          upload_type: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_log?: Json | null
+          failed_records?: number | null
+          file_name?: string
+          id?: string
+          school_id?: string | null
+          status?: string | null
+          successful_records?: number | null
+          total_records?: number
+          upload_type?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_uploads_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_uploads_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -601,6 +661,53 @@ export type Database = {
           },
         ]
       }
+      school_settings: {
+        Row: {
+          auto_generate_ids: boolean | null
+          bulk_upload_enabled: boolean | null
+          created_at: string | null
+          email_notifications_enabled: boolean | null
+          id: string
+          school_id: string | null
+          staff_registration_enabled: boolean | null
+          student_registration_enabled: boolean | null
+          teacher_registration_enabled: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_generate_ids?: boolean | null
+          bulk_upload_enabled?: boolean | null
+          created_at?: string | null
+          email_notifications_enabled?: boolean | null
+          id?: string
+          school_id?: string | null
+          staff_registration_enabled?: boolean | null
+          student_registration_enabled?: boolean | null
+          teacher_registration_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_generate_ids?: boolean | null
+          bulk_upload_enabled?: boolean | null
+          created_at?: string | null
+          email_notifications_enabled?: boolean | null
+          id?: string
+          school_id?: string | null
+          staff_registration_enabled?: boolean | null
+          student_registration_enabled?: boolean | null
+          teacher_registration_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_settings_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: true
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schools: {
         Row: {
           address: string | null
@@ -924,6 +1031,50 @@ export type Database = {
           },
         ]
       }
+      user_credentials: {
+        Row: {
+          created_at: string | null
+          default_password: string | null
+          id: string
+          is_active: boolean | null
+          last_login: string | null
+          password_changed: boolean | null
+          profile_id: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          default_password?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_login?: string | null
+          password_changed?: boolean | null
+          profile_id?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          default_password?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_login?: string | null
+          password_changed?: boolean | null
+          profile_id?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_credentials_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -931,6 +1082,15 @@ export type Database = {
     Functions: {
       generate_default_password: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_username: {
+        Args: {
+          first_name: string
+          last_name: string
+          role: Database["public"]["Enums"]["user_role"]
+          school_id: string
+        }
         Returns: string
       }
       get_user_role: {
