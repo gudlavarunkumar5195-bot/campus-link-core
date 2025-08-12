@@ -17,6 +17,7 @@ import FeeHeadForm from './FeeHeadForm';
 import BulkUploadForm from '../bulk-upload/BulkUploadForm';
 import SchoolSettingsForm from './SchoolSettingsForm';
 import UserCredentialsManager from '../user-management/UserCredentialsManager';
+import { useAutoCredentials } from '@/hooks/useAutoCredentials';
 
 interface CustomField {
   id: string;
@@ -70,9 +71,11 @@ const SchoolConfiguration: React.FC = () => {
         .single();
       
       if (error) throw error;
-      return data as Profile;
+      return data;
     },
   });
+
+  useAutoCredentials(profile?.school_id || '');
 
   const { data: customFields } = useQuery({
     queryKey: ['custom-fields', profile?.school_id],
