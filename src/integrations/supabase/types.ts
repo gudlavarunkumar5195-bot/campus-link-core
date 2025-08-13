@@ -1093,6 +1093,10 @@ export type Database = {
         }
         Returns: string
       }
+      get_default_school_for_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["user_role"]

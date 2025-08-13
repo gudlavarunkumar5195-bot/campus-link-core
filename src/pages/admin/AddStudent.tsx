@@ -1,130 +1,89 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, UserPlus, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
-
-type Gender = 'male' | 'female' | 'other';
-
-interface StudentFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  classId: string;
-  studentId: string;
-  rollNumber: string;
-  parentName: string;
-  parentPhone: string;
-  parentEmail: string;
-  admissionDate: string;
-  dateOfBirth: string;
-  gender: Gender | '';
-  address: string;
-  medicalInfo: string;
-}
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 const AddStudent = () => {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<StudentFormData>({
-    firstName: '',
-    lastName: '',
+  
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
-    classId: '',
-    studentId: '',
-    rollNumber: '',
-    parentName: '',
-    parentPhone: '',
-    parentEmail: '',
-    admissionDate: new Date().toISOString().split('T')[0],
-    dateOfBirth: '',
+    date_of_birth: '',
     gender: '',
     address: '',
-    medicalInfo: ''
+    student_id: '',
+    admission_date: '',
+    parent_name: '',
+    parent_phone: '',
+    parent_email: '',
+    medical_info: '',
   });
 
-  const isAdmin = profile?.role === 'admin';
-
-  const { data: classes } = useQuery({
-    queryKey: ['classes', profile?.school_id],
-    queryFn: async () => {
-      if (!profile?.school_id) return [];
-      
-      const { data, error } = await supabase
-        .from('classes')
-        .select('*')
-        .eq('school_id', profile.school_id);
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!profile?.school_id,
-  });
-
-  if (!user || !profile || !isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <Card className="w-full max-w-md">
-          <CardContent className="text-center py-8">
-            <h2 className="text-2xl font-bold mb-2 text-amber-600">Access Denied</h2>
-            <p className="text-gray-600 mb-4">
-              Only administrators can add students.
-            </p>
-            <Button onClick={() => navigate('/')} variant="outline">
-              Return to Dashboard
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const handleInputChange = (field: keyof StudentFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleGenderChange = (value: Gender) => {
-    setFormData(prev => ({ ...prev, gender: value }));
+  const handleSelectChange = (value: string, name: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!profile?.school_id) {
+      toast({
+        title: "Error",
+        description: "No school association found. Please contact your administrator.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Generate default password
-      const defaultPassword = `School${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+      // Generate a UUID for the profile
+      const profileId = uuidv4();
       
-      // First create the user account manually in the profiles table
-      const profileId = crypto.randomUUID();
-      
-      // Create profile record first
-      const { error: profileError } = await supabase
+      // Create profile first
+      const { data: newProfile, error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: profileId,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
           email: formData.email,
           phone: formData.phone,
-          role: 'student',
+          role: 'student' as const,
           school_id: profile.school_id,
-          roll_number: formData.rollNumber,
-          date_of_birth: formData.dateOfBirth || null,
-          gender: formData.gender || null,
-          address: formData.address
-        });
+          date_of_birth: formData.date_of_birth || null,
+          gender: formData.gender as 'male' | 'female' | 'other' || null,
+          address: formData.address,
+        })
+        .select()
+        .single();
 
       if (profileError) throw profileError;
 
@@ -132,46 +91,50 @@ const AddStudent = () => {
       const { error: studentError } = await supabase
         .from('students')
         .insert({
-          profile_id: profileId,
-          student_id: formData.studentId,
-          class_id: formData.classId,
-          admission_date: formData.admissionDate,
-          parent_name: formData.parentName,
-          parent_phone: formData.parentPhone,
-          parent_email: formData.parentEmail,
-          medical_info: formData.medicalInfo
+          profile_id: newProfile.id,
+          student_id: formData.student_id || `STD${Date.now()}`,
+          admission_date: formData.admission_date || new Date().toISOString().split('T')[0],
+          parent_name: formData.parent_name,
+          parent_phone: formData.parent_phone,
+          parent_email: formData.parent_email,
+          medical_info: formData.medical_info,
         });
 
       if (studentError) throw studentError;
 
+      // Generate credentials
+      try {
+        const { data: username } = await supabase.rpc('generate_username', {
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          role: 'student',
+          school_id: profile.school_id
+        });
+
+        const defaultPassword = 'School' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+
+        await supabase
+          .from('user_credentials')
+          .insert({
+            profile_id: newProfile.id,
+            username: username,
+            default_password: defaultPassword,
+          });
+      } catch (credError) {
+        console.warn('Failed to generate credentials:', credError);
+      }
+
       toast({
         title: "Success",
-        description: `Student added successfully! Login credentials will be generated automatically.`,
+        description: "Student added successfully",
       });
 
-      // Reset form
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        classId: '',
-        studentId: '',
-        rollNumber: '',
-        parentName: '',
-        parentPhone: '',
-        parentEmail: '',
-        admissionDate: new Date().toISOString().split('T')[0],
-        dateOfBirth: '',
-        gender: '',
-        address: '',
-        medicalInfo: ''
-      });
-
+      navigate('/');
     } catch (error: any) {
+      console.error('Error adding student:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to add student",
         variant: "destructive",
       });
     } finally {
@@ -179,131 +142,106 @@ const AddStudent = () => {
     }
   };
 
+  if (!profile?.school_id) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="text-center py-8">
+            <h2 className="text-2xl font-bold mb-2 text-gray-900">No School Association</h2>
+            <p className="text-gray-600 mb-4">
+              Please associate your account with a school first.
+            </p>
+            <Button onClick={() => navigate('/school-config')} variant="outline">
+              Go to School Configuration
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-900 p-6">
+    <div className="min-h-screen bg-white p-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center space-x-4 mb-6">
           <Button
             variant="ghost"
-            onClick={() => navigate('/')}
-            className="flex items-center space-x-2 text-white hover:text-amber-400"
+            onClick={() => navigate(-1)}
+            className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Back to Dashboard</span>
+            <span>Back</span>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-amber-600">Add Student</h1>
-            <p className="text-gray-400">Create a new student account</p>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Add Student</h1>
         </div>
 
-        <Card className="bg-slate-800 border-slate-700">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-amber-600">
-              <UserPlus className="h-5 w-5" />
-              <span>Student Information</span>
-            </CardTitle>
+            <CardTitle>Student Information</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="firstName" className="text-red-700 font-semibold">First Name</Label>
+                  <Label htmlFor="first_name">First Name *</Label>
                   <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    id="first_name"
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleChange}
                     required
-                    className="bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="lastName" className="text-red-700 font-semibold">Last Name</Label>
+                  <Label htmlFor="last_name">Last Name *</Label>
                   <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    id="last_name"
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleChange}
                     required
-                    className="bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="email" className="text-red-700 font-semibold">Email</Label>
+                  <Label htmlFor="email">Email *</Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onChange={handleChange}
                     required
-                    className="bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone" className="text-red-700 font-semibold">Phone</Label>
+                  <Label htmlFor="phone">Phone</Label>
                   <Input
                     id="phone"
+                    name="phone"
                     value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
+                    onChange={handleChange}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="studentId" className="text-red-700 font-semibold">Student ID</Label>
+                  <Label htmlFor="date_of_birth">Date of Birth</Label>
                   <Input
-                    id="studentId"
-                    value={formData.studentId}
-                    onChange={(e) => handleInputChange('studentId', e.target.value)}
-                    required
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="rollNumber" className="text-red-700 font-semibold">Roll Number</Label>
-                  <Input
-                    id="rollNumber"
-                    value={formData.rollNumber}
-                    onChange={(e) => handleInputChange('rollNumber', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="classId" className="text-red-700 font-semibold">Class</Label>
-                  <Select value={formData.classId} onValueChange={(value) => handleInputChange('classId', value)}>
-                    <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                      <SelectValue placeholder="Select class" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {classes?.map((cls) => (
-                        <SelectItem key={cls.id} value={cls.id}>
-                          {cls.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="dateOfBirth" className="text-red-700 font-semibold">Date of Birth</Label>
-                  <Input
-                    id="dateOfBirth"
+                    id="date_of_birth"
+                    name="date_of_birth"
                     type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
+                    value={formData.date_of_birth}
+                    onChange={handleChange}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="gender" className="text-red-700 font-semibold">Gender</Label>
-                  <Select value={formData.gender} onValueChange={handleGenderChange}>
-                    <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select onValueChange={(value) => handleSelectChange(value, 'gender')}>
+                    <SelectTrigger>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
@@ -313,62 +251,95 @@ const AddStudent = () => {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="parentName" className="text-red-700 font-semibold">Parent Name</Label>
+                  <Label htmlFor="student_id">Student ID</Label>
                   <Input
-                    id="parentName"
-                    value={formData.parentName}
-                    onChange={(e) => handleInputChange('parentName', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="parentPhone" className="text-red-700 font-semibold">Parent Phone</Label>
-                  <Input
-                    id="parentPhone"
-                    value={formData.parentPhone}
-                    onChange={(e) => handleInputChange('parentPhone', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="parentEmail" className="text-red-700 font-semibold">Parent Email</Label>
-                  <Input
-                    id="parentEmail"
-                    type="email"
-                    value={formData.parentEmail}
-                    onChange={(e) => handleInputChange('parentEmail', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
+                    id="student_id"
+                    name="student_id"
+                    value={formData.student_id}
+                    onChange={handleChange}
+                    placeholder="Auto-generated if empty"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="address" className="text-red-700 font-semibold">Address</Label>
+                <Label htmlFor="admission_date">Admission Date</Label>
                 <Input
+                  id="admission_date"
+                  name="admission_date"
+                  type="date"
+                  value={formData.admission_date}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="address">Address</Label>
+                <Textarea
                   id="address"
+                  name="address"
                   value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  className="bg-slate-700 border-slate-600 text-white"
+                  onChange={handleChange}
+                  rows={3}
                 />
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Parent/Guardian Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="parent_name">Parent/Guardian Name</Label>
+                    <Input
+                      id="parent_name"
+                      name="parent_name"
+                      value={formData.parent_name}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="parent_phone">Parent/Guardian Phone</Label>
+                    <Input
+                      id="parent_phone"
+                      name="parent_phone"
+                      value={formData.parent_phone}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="parent_email">Parent/Guardian Email</Label>
+                    <Input
+                      id="parent_email"
+                      name="parent_email"
+                      type="email"
+                      value={formData.parent_email}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>
-                <Label htmlFor="medicalInfo" className="text-red-700 font-semibold">Medical Information</Label>
-                <Input
-                  id="medicalInfo"
-                  value={formData.medicalInfo}
-                  onChange={(e) => handleInputChange('medicalInfo', e.target.value)}
-                  className="bg-slate-700 border-slate-600 text-white"
+                <Label htmlFor="medical_info">Medical Information</Label>
+                <Textarea
+                  id="medical_info"
+                  name="medical_info"
+                  value={formData.medical_info}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Any medical conditions or allergies"
                 />
               </div>
 
-              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Add Student
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding Student...
+                  </>
+                ) : (
+                  'Add Student'
+                )}
               </Button>
             </form>
           </CardContent>

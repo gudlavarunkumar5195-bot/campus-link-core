@@ -27,6 +27,11 @@ export class BulkUploadProcessor {
 
     for (const row of data) {
       try {
+        // Validate required fields
+        if (!row.first_name || !row.last_name || !row.email) {
+          throw new Error('Missing required fields: first_name, last_name, email');
+        }
+
         // Validate and type the gender field
         const gender = this.validateGender(row.gender as string);
         
@@ -41,12 +46,12 @@ export class BulkUploadProcessor {
             first_name: row.first_name as string,
             last_name: row.last_name as string,
             email: row.email as string,
-            phone: row.phone as string,
+            phone: row.phone as string || '',
             role: 'student' as const,
             school_id: this.schoolId,
-            date_of_birth: row.date_of_birth as string,
+            date_of_birth: row.date_of_birth as string || null,
             gender: gender,
-            address: row.address as string,
+            address: row.address as string || '',
           })
           .select()
           .single();
@@ -58,12 +63,12 @@ export class BulkUploadProcessor {
           .from('students')
           .insert({
             profile_id: profile.id,
-            student_id: row.student_id as string,
-            admission_date: row.admission_date as string,
-            parent_name: row.parent_name as string,
-            parent_phone: row.parent_phone as string,
-            parent_email: row.parent_email as string,
-            medical_info: row.medical_info as string,
+            student_id: row.student_id as string || `STD${Date.now()}${successCount}`,
+            admission_date: row.admission_date as string || new Date().toISOString().split('T')[0],
+            parent_name: row.parent_name as string || '',
+            parent_phone: row.parent_phone as string || '',
+            parent_email: row.parent_email as string || '',
+            medical_info: row.medical_info as string || '',
           });
 
         if (studentError) throw studentError;
@@ -93,6 +98,11 @@ export class BulkUploadProcessor {
 
     for (const row of data) {
       try {
+        // Validate required fields
+        if (!row.first_name || !row.last_name || !row.email) {
+          throw new Error('Missing required fields: first_name, last_name, email');
+        }
+
         // Validate and type the gender field
         const gender = this.validateGender(row.gender as string);
         
@@ -107,12 +117,12 @@ export class BulkUploadProcessor {
             first_name: row.first_name as string,
             last_name: row.last_name as string,
             email: row.email as string,
-            phone: row.phone as string,
+            phone: row.phone as string || '',
             role: 'teacher' as const,
             school_id: this.schoolId,
-            date_of_birth: row.date_of_birth as string,
+            date_of_birth: row.date_of_birth as string || null,
             gender: gender,
-            address: row.address as string,
+            address: row.address as string || '',
           })
           .select()
           .single();
@@ -124,11 +134,11 @@ export class BulkUploadProcessor {
           .from('teachers')
           .insert({
             profile_id: profile.id,
-            employee_id: row.employee_id as string,
-            hire_date: row.hire_date as string,
-            salary: row.salary as number,
-            qualification: row.qualification as string,
-            specialization: row.specialization as string,
+            employee_id: row.employee_id as string || `TCH${Date.now()}${successCount}`,
+            hire_date: row.hire_date as string || new Date().toISOString().split('T')[0],
+            salary: row.salary as number || 0,
+            qualification: row.qualification as string || '',
+            specialization: row.specialization as string || '',
           });
 
         if (teacherError) throw teacherError;
@@ -158,6 +168,11 @@ export class BulkUploadProcessor {
 
     for (const row of data) {
       try {
+        // Validate required fields
+        if (!row.first_name || !row.last_name || !row.email) {
+          throw new Error('Missing required fields: first_name, last_name, email');
+        }
+
         // Validate and type the gender field
         const gender = this.validateGender(row.gender as string);
         
@@ -172,12 +187,12 @@ export class BulkUploadProcessor {
             first_name: row.first_name as string,
             last_name: row.last_name as string,
             email: row.email as string,
-            phone: row.phone as string,
+            phone: row.phone as string || '',
             role: 'admin' as const, // Staff gets admin role
             school_id: this.schoolId,
-            date_of_birth: row.date_of_birth as string,
+            date_of_birth: row.date_of_birth as string || null,
             gender: gender,
-            address: row.address as string,
+            address: row.address as string || '',
           })
           .select()
           .single();
@@ -189,10 +204,10 @@ export class BulkUploadProcessor {
           .from('staff')
           .insert({
             profile_id: profile.id,
-            employee_id: row.employee_id as string,
-            hire_date: row.hire_date as string,
-            salary: row.salary as number,
-            position: row.position as string,
+            employee_id: row.employee_id as string || `STF${Date.now()}${successCount}`,
+            hire_date: row.hire_date as string || new Date().toISOString().split('T')[0],
+            salary: row.salary as number || 0,
+            position: row.position as string || 'Staff',
           });
 
         if (staffError) throw staffError;
@@ -216,7 +231,8 @@ export class BulkUploadProcessor {
   }
 
   private validateGender(gender: string): 'male' | 'female' | 'other' {
-    const normalizedGender = gender?.toLowerCase().trim();
+    if (!gender) return 'other';
+    const normalizedGender = gender.toLowerCase().trim();
     if (normalizedGender === 'male' || normalizedGender === 'm') {
       return 'male';
     } else if (normalizedGender === 'female' || normalizedGender === 'f') {
@@ -227,22 +243,27 @@ export class BulkUploadProcessor {
   }
 
   private async generateCredentials(profileId: string, firstName: string, lastName: string, role: 'student' | 'teacher' | 'admin') {
-    const { data: username } = await supabase.rpc('generate_username', {
-      first_name: firstName,
-      last_name: lastName,
-      role: role,
-      school_id: this.schoolId
-    });
-
-    const defaultPassword = 'School' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-
-    await supabase
-      .from('user_credentials')
-      .insert({
-        profile_id: profileId,
-        username: username,
-        default_password: defaultPassword,
+    try {
+      const { data: username } = await supabase.rpc('generate_username', {
+        first_name: firstName,
+        last_name: lastName,
+        role: role,
+        school_id: this.schoolId
       });
+
+      const defaultPassword = 'School' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+
+      await supabase
+        .from('user_credentials')
+        .insert({
+          profile_id: profileId,
+          username: username,
+          default_password: defaultPassword,
+        });
+    } catch (error) {
+      console.error('Error generating credentials:', error);
+      // Don't throw here as the profile creation was successful
+    }
   }
 
   parseExcelData(file: File): Promise<BulkUploadRow[]> {

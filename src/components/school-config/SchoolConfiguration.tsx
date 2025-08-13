@@ -1,381 +1,105 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit2, AlertCircle } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import SchoolSettingsForm from './SchoolSettingsForm';
+import BulkUploadForm from '@/components/bulk-upload/BulkUploadForm';
+import UserCredentialsManager from '@/components/user-management/UserCredentialsManager';
+import AcademicYearManagement from '@/components/academic-year/AcademicYearManagement';
+import ClassStructureManagement from '@/components/class-structure/ClassStructureManagement';
 import CustomFieldForm from './CustomFieldForm';
 import DocumentTypeForm from './DocumentTypeForm';
 import FeeHeadForm from './FeeHeadForm';
-import BulkUploadForm from '../bulk-upload/BulkUploadForm';
-import SchoolSettingsForm from './SchoolSettingsForm';
-import UserCredentialsManager from '../user-management/UserCredentialsManager';
-import { useAutoCredentials } from '@/hooks/useAutoCredentials';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import SchoolAssociation from '@/components/school-management/SchoolAssociation';
 
-interface CustomField {
-  id: string;
-  module: 'student' | 'teacher' | 'fee' | 'document';
-  label: string;
-  field_type: 'text' | 'number' | 'dropdown' | 'checkbox' | 'date';
-  options: string[];
-  is_required: boolean;
-}
-
-interface DocumentType {
-  id: string;
-  name: string;
-  description: string;
-  is_required: boolean;
-}
-
-interface FeeHead {
-  id: string;
-  name: string;
-  description: string;
-  amount: number;
-  is_active: boolean;
-}
-
-const SchoolConfiguration: React.FC = () => {
+const SchoolConfiguration = () => {
+  const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState('settings');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogType, setDialogType] = useState<'custom-field' | 'document-type' | 'fee-head'>('custom-field');
-  const [editingItem, setEditingItem] = useState<any>(null);
 
-  const { data: profile } = useQuery({
-    queryKey: ['profile'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Only use auto credentials if we have a school_id
-  useAutoCredentials(profile?.school_id || '');
-
-  const { data: customFields } = useQuery({
-    queryKey: ['custom-fields', profile?.school_id],
-    queryFn: async () => {
-      if (!profile?.school_id) return [];
-      
-      const { data, error } = await supabase
-        .from('custom_fields')
-        .select('*')
-        .eq('school_id', profile.school_id)
-        .order('label');
-      
-      if (error) throw error;
-      return data as CustomField[];
-    },
-    enabled: !!profile?.school_id,
-  });
-
-  const { data: documentTypes } = useQuery({
-    queryKey: ['document-types', profile?.school_id],
-    queryFn: async () => {
-      if (!profile?.school_id) return [];
-      
-      const { data, error } = await supabase
-        .from('document_types')
-        .select('*')
-        .eq('school_id', profile.school_id)
-        .order('name');
-      
-      if (error) throw error;
-      return data as DocumentType[];
-    },
-    enabled: !!profile?.school_id,
-  });
-
-  const { data: feeHeads } = useQuery({
-    queryKey: ['fee-heads', profile?.school_id],
-    queryFn: async () => {
-      if (!profile?.school_id) return [];
-      
-      const { data, error } = await supabase
-        .from('fee_heads')
-        .select('*')
-        .eq('school_id', profile.school_id)
-        .order('name');
-      
-      if (error) throw error;
-      return data as FeeHead[];
-    },
-    enabled: !!profile?.school_id,
-  });
-
-  const openDialog = (type: 'custom-field' | 'document-type' | 'fee-head', item?: any) => {
-    setDialogType(type);
-    setEditingItem(item);
-    setIsDialogOpen(true);
-  };
-
-  const closeDialog = () => {
-    setIsDialogOpen(false);
-    setEditingItem(null);
-  };
-
-  const getDialogTitle = () => {
-    const action = editingItem ? 'Edit' : 'Create';
-    switch (dialogType) {
-      case 'custom-field':
-        return `${action} Custom Field`;
-      case 'document-type':
-        return `${action} Document Type`;
-      case 'fee-head':
-        return `${action} Fee Head`;
-      default:
-        return 'Form';
-    }
-  };
-
-  // Show warning if no school_id
+  // If admin doesn't have a school association, show the association component
   if (!profile?.school_id) {
-    return (
-      <div className="p-6 bg-white min-h-screen">
-        <Alert className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            No school association found. Please contact your administrator to associate your account with a school.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
+    return <SchoolAssociation />;
   }
 
   return (
-    <div className="p-6 bg-white min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">School Configuration</h1>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6 bg-white border">
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="bulk-upload">Bulk Upload</TabsTrigger>
-          <TabsTrigger value="user-credentials">User Credentials</TabsTrigger>
+          <TabsTrigger value="credentials">Credentials</TabsTrigger>
+          <TabsTrigger value="academic-years">Academic Years</TabsTrigger>
+          <TabsTrigger value="class-structure">Class Structure</TabsTrigger>
           <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
           <TabsTrigger value="document-types">Document Types</TabsTrigger>
           <TabsTrigger value="fee-heads">Fee Heads</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="settings" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">School Settings</h2>
-          </div>
-          <SchoolSettingsForm schoolId={profile.school_id} />
+        <TabsContent value="settings" className="mt-6">
+          <Card>
+            <CardContent className="p-6">
+              <SchoolSettingsForm />
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="bulk-upload" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">Bulk Upload</h2>
-          </div>
-          <BulkUploadForm schoolId={profile.school_id} />
+        <TabsContent value="bulk-upload" className="mt-6">
+          <Card>
+            <CardContent className="p-6">
+              <BulkUploadForm />
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="user-credentials" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">User Credentials</h2>
-          </div>
-          <UserCredentialsManager schoolId={profile.school_id} />
+        <TabsContent value="credentials" className="mt-6">
+          <Card>
+            <CardContent className="p-6">
+              <UserCredentialsManager />
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="custom-fields" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">Custom Fields</h2>
-            <Button onClick={() => openDialog('custom-field')} className="bg-green-600 hover:bg-green-700">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Custom Field
-            </Button>
-          </div>
-          
-          <div className="grid gap-4">
-            {customFields?.length === 0 ? (
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6 text-center text-gray-500">
-                  No custom fields configured yet. Click "Add Custom Field" to create one.
-                </CardContent>
-              </Card>
-            ) : (
-              customFields?.map((field) => (
-                <Card key={field.id} className="bg-white border border-gray-200">
-                  <CardHeader>
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-lg text-gray-900">{field.label}</CardTitle>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openDialog('custom-field', field)}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex gap-4 text-sm text-gray-600">
-                      <span>Module: {field.module}</span>
-                      <span>Type: {field.field_type}</span>
-                      <span>Required: {field.is_required ? 'Yes' : 'No'}</span>
-                    </div>
-                    {field.options.length > 0 && (
-                      <div className="mt-2 text-sm text-gray-600">
-                        Options: {field.options.join(', ')}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
+        <TabsContent value="academic-years" className="mt-6">
+          <Card>
+            <CardContent className="p-6">
+              <AcademicYearManagement />
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="document-types" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">Document Types</h2>
-            <Button onClick={() => openDialog('document-type')} className="bg-green-600 hover:bg-green-700">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Document Type
-            </Button>
-          </div>
-          
-          <div className="grid gap-4">
-            {documentTypes?.length === 0 ? (
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6 text-center text-gray-500">
-                  No document types configured yet. Click "Add Document Type" to create one.
-                </CardContent>
-              </Card>
-            ) : (
-              documentTypes?.map((docType) => (
-                <Card key={docType.id} className="bg-white border border-gray-200">
-                  <CardHeader>
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-lg text-gray-900">{docType.name}</CardTitle>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openDialog('document-type', docType)}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex gap-4 text-sm text-gray-600">
-                      <span>Required: {docType.is_required ? 'Yes' : 'No'}</span>
-                    </div>
-                    {docType.description && (
-                      <p className="text-sm text-gray-600 mt-2">{docType.description}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
+        <TabsContent value="class-structure" className="mt-6">
+          <Card>
+            <CardContent className="p-6">
+              <ClassStructureManagement />
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="fee-heads" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">Fee Heads</h2>
-            <Button onClick={() => openDialog('fee-head')} className="bg-green-600 hover:bg-green-700">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Fee Head
-            </Button>
-          </div>
-          
-          <div className="grid gap-4">
-            {feeHeads?.length === 0 ? (
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6 text-center text-gray-500">
-                  No fee heads configured yet. Click "Add Fee Head" to create one.
-                </CardContent>
-              </Card>
-            ) : (
-              feeHeads?.map((feeHead) => (
-                <Card key={feeHead.id} className="bg-white border border-gray-200">
-                  <CardHeader>
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-lg text-gray-900">{feeHead.name}</CardTitle>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openDialog('fee-head', feeHead)}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex gap-4 text-sm text-gray-600">
-                      <span>Amount: ${feeHead.amount}</span>
-                      <span>Active: {feeHead.is_active ? 'Yes' : 'No'}</span>
-                    </div>
-                    {feeHead.description && (
-                      <p className="text-sm text-gray-600 mt-2">{feeHead.description}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
+        <TabsContent value="custom-fields" className="mt-6">
+          <Card>
+            <CardContent className="p-6">
+              <CustomFieldForm />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="document-types" className="mt-6">
+          <Card>
+            <CardContent className="p-6">
+              <DocumentTypeForm />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="fee-heads" className="mt-6">
+          <Card>
+            <CardContent className="p-6">
+              <FeeHeadForm />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md bg-white">
-          <DialogHeader>
-            <DialogTitle className="text-gray-900">{getDialogTitle()}</DialogTitle>
-          </DialogHeader>
-          
-          <>
-            {dialogType === 'custom-field' && (
-              <CustomFieldForm
-                field={editingItem}
-                onClose={closeDialog}
-                schoolId={profile.school_id}
-              />
-            )}
-            {dialogType === 'document-type' && (
-              <DocumentTypeForm
-                documentType={editingItem}
-                onClose={closeDialog}
-                schoolId={profile.school_id}
-              />
-            )}
-            {dialogType === 'fee-head' && (
-              <FeeHeadForm
-                feeHead={editingItem}
-                onClose={closeDialog}
-                schoolId={profile.school_id}
-              />
-            )}
-          </>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
