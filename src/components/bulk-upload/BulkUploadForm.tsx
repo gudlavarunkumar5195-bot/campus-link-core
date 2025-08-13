@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +26,6 @@ const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ schoolId }) => {
     mutationFn: async ({ file, type }: { file: File; type: string }) => {
       const processor = new BulkUploadProcessor(schoolId);
       
-      // Create bulk upload record
       const { data: uploadRecord, error: uploadError } = await supabase
         .from('bulk_uploads')
         .insert({
@@ -43,16 +41,13 @@ const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ schoolId }) => {
       if (uploadError) throw uploadError;
 
       try {
-        // Parse Excel/CSV data
         const data = await processor.parseExcelData(file);
         
-        // Update total records
         await supabase
           .from('bulk_uploads')
           .update({ total_records: data.length })
           .eq('id', uploadRecord.id);
 
-        // Process based on type
         let result;
         switch (type) {
           case 'students':
@@ -68,7 +63,6 @@ const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ schoolId }) => {
             throw new Error('Invalid upload type');
         }
 
-        // Update final status
         await supabase
           .from('bulk_uploads')
           .update({
@@ -82,7 +76,6 @@ const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ schoolId }) => {
 
         return { uploadRecord, result };
       } catch (error: any) {
-        // Update status to failed
         await supabase
           .from('bulk_uploads')
           .update({
@@ -157,16 +150,16 @@ const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ schoolId }) => {
     
     switch (type) {
       case 'students':
-        csvContent = 'first_name,last_name,email,phone,date_of_birth,gender,address,student_id,admission_date,parent_name,parent_phone,parent_email,medical_info\n';
-        csvContent += 'John,Doe,john.doe@email.com,1234567890,2005-01-15,male,123 Main St,STD001,2023-09-01,Jane Doe,0987654321,jane.doe@email.com,No allergies';
+        csvContent = 'first_name,last_name,email,phone,date_of_birth,gender,address,student_id,admission_date,parent_name,parent_phone,parent_email,medical_info,emergency_contact_name,emergency_contact_phone,blood_group,nationality,religion,previous_school,class_preference\n';
+        csvContent += 'John,Doe,john.doe@email.com,1234567890,2005-01-15,male,123 Main St,STD001,2023-09-01,Jane Doe,0987654321,jane.doe@email.com,No allergies,Jane Doe,0987654321,A+,Indian,Hindu,ABC School,10th Grade';
         break;
       case 'teachers':
-        csvContent = 'first_name,last_name,email,phone,date_of_birth,gender,address,employee_id,hire_date,salary,qualification,specialization\n';
-        csvContent += 'Jane,Smith,jane.smith@email.com,1234567890,1985-05-20,female,456 Oak St,TCH001,2023-08-01,50000,M.Ed,Mathematics';
+        csvContent = 'first_name,last_name,email,phone,date_of_birth,gender,address,employee_id,hire_date,salary,qualification,specialization,experience,emergency_contact_name,emergency_contact_phone,blood_group,nationality,marital_status,teaching_level,department\n';
+        csvContent += 'Jane,Smith,jane.smith@email.com,1234567890,1985-05-20,female,456 Oak St,TCH001,2023-08-01,50000,M.Ed,Mathematics,5,John Smith,9876543210,B+,Indian,married,secondary,Science';
         break;
       case 'staff':
-        csvContent = 'first_name,last_name,email,phone,date_of_birth,gender,address,employee_id,hire_date,salary,position\n';
-        csvContent += 'Bob,Johnson,bob.johnson@email.com,1234567890,1980-03-10,male,789 Pine St,STF001,2023-07-01,40000,Administrator';
+        csvContent = 'first_name,last_name,email,phone,date_of_birth,gender,address,employee_id,hire_date,salary,position,department,qualification,experience,emergency_contact_name,emergency_contact_phone,blood_group,nationality,marital_status\n';
+        csvContent += 'Bob,Johnson,bob.johnson@email.com,1234567890,1980-03-10,male,789 Pine St,STF001,2023-07-01,40000,Administrator,administration,MBA,8,Alice Johnson,8765432109,O+,Indian,married';
         break;
     }
 
@@ -180,7 +173,7 @@ const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ schoolId }) => {
 
     toast({
       title: "Template Downloaded",
-      description: `${type} template downloaded successfully!`,
+      description: `Enhanced ${type} template downloaded successfully! This template includes all available fields for comprehensive data import.`,
     });
   };
 
@@ -190,10 +183,22 @@ const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ schoolId }) => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <FileSpreadsheet className="h-5 w-5" />
-            <span>Bulk Upload from Excel/CSV</span>
+            <span>Enhanced Bulk Upload from Excel/CSV</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-blue-800 mb-2">Enhanced Templates Available</h4>
+            <p className="text-blue-700 text-sm">
+              Our templates now include comprehensive fields for complete data management:
+            </p>
+            <ul className="text-blue-700 text-sm mt-2 space-y-1">
+              <li>• <strong>Students:</strong> Personal, academic, parent, emergency, and medical information</li>
+              <li>• <strong>Teachers:</strong> Professional qualifications, experience, subjects, and employment details</li>
+              <li>• <strong>Staff:</strong> Job responsibilities, departments, skills, and administrative information</li>
+            </ul>
+          </div>
+
           <div>
             <Label htmlFor="upload-type">Upload Type</Label>
             <Select value={uploadType} onValueChange={setUploadType}>
@@ -201,9 +206,9 @@ const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ schoolId }) => {
                 <SelectValue placeholder="Select what to upload" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="students">Students</SelectItem>
-                <SelectItem value="teachers">Teachers</SelectItem>
-                <SelectItem value="staff">Staff</SelectItem>
+                <SelectItem value="students">Students (Enhanced)</SelectItem>
+                <SelectItem value="teachers">Teachers (Enhanced)</SelectItem>
+                <SelectItem value="staff">Staff (Enhanced)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -216,8 +221,11 @@ const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ schoolId }) => {
                 className="flex items-center space-x-2"
               >
                 <Download className="h-4 w-4" />
-                <span>Download Template</span>
+                <span>Download Enhanced Template</span>
               </Button>
+              <span className="text-sm text-gray-600">
+                Includes all available fields for comprehensive data import
+              </span>
             </div>
           )}
 
@@ -242,7 +250,7 @@ const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ schoolId }) => {
             className="w-full bg-green-600 hover:bg-green-700"
           >
             <Upload className="mr-2 h-4 w-4" />
-            {isProcessing ? 'Processing...' : 'Upload and Process File'}
+            {isProcessing ? 'Processing Enhanced Upload...' : 'Upload and Process File'}
           </Button>
         </CardContent>
       </Card>

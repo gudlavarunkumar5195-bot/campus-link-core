@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, UserPlus, Loader2 } from 'lucide-react';
@@ -27,6 +28,20 @@ interface TeacherFormData {
   gender: Gender | '';
   address: string;
   subjectIds: string[];
+  experience: string;
+  previousInstitution: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  bloodGroup: string;
+  nationality: string;
+  maritalStatus: string;
+  teachingLevel: string;
+  contractType: string;
+  probationPeriod: string;
+  workingHours: string;
+  department: string;
+  mentorAssigned: boolean;
+  trainingCompleted: boolean;
 }
 
 const AddTeacher = () => {
@@ -47,7 +62,21 @@ const AddTeacher = () => {
     dateOfBirth: '',
     gender: '',
     address: '',
-    subjectIds: [] as string[]
+    subjectIds: [] as string[],
+    experience: '',
+    previousInstitution: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    bloodGroup: '',
+    nationality: '',
+    maritalStatus: '',
+    teachingLevel: '',
+    contractType: '',
+    probationPeriod: '',
+    workingHours: '',
+    department: '',
+    mentorAssigned: false,
+    trainingCompleted: false,
   });
 
   const isAdmin = profile?.role === 'admin';
@@ -86,8 +115,8 @@ const AddTeacher = () => {
     );
   }
 
-  const handleInputChange = (field: keyof TeacherFormData, value: string) => {
-    if (field === 'subjectIds') return; // Handle subjectIds separately
+  const handleInputChange = (field: keyof TeacherFormData, value: string | boolean) => {
+    if (field === 'subjectIds') return;
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -104,15 +133,17 @@ const AddTeacher = () => {
     }));
   };
 
+  const handleCheckboxChange = (field: 'mentorAssigned' | 'trainingCompleted', checked: boolean) => {
+    setFormData(prev => ({ ...prev, [field]: checked }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Generate default password
       const defaultPassword = `School${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
       
-      // Create user in Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: formData.email,
         password: defaultPassword,
@@ -127,7 +158,6 @@ const AddTeacher = () => {
 
       if (authError) throw authError;
 
-      // Create teacher record
       const { error: teacherError } = await supabase
         .from('teachers')
         .insert({
@@ -141,7 +171,6 @@ const AddTeacher = () => {
 
       if (teacherError) throw teacherError;
 
-      // Update profile with additional info
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -149,13 +178,14 @@ const AddTeacher = () => {
           employee_id: formData.employeeId,
           date_of_birth: formData.dateOfBirth,
           gender: formData.gender || null,
-          address: formData.address
+          address: formData.address,
+          emergency_contact_name: formData.emergencyContactName,
+          emergency_contact_phone: formData.emergencyContactPhone,
         })
         .eq('id', authData.user.id);
 
       if (profileError) throw profileError;
 
-      // Link teacher to subjects
       if (formData.subjectIds.length > 0) {
         const teacherSubjects = formData.subjectIds.map(subjectId => ({
           teacher_id: authData.user.id,
@@ -188,7 +218,7 @@ const AddTeacher = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="flex items-center space-x-4 mb-6">
           <Button
             variant="ghost"
@@ -212,147 +242,351 @@ const AddTeacher = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="firstName" className="text-red-700 font-semibold">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    required
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-amber-500 border-b border-slate-600 pb-2">Basic Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="firstName" className="text-red-700 font-semibold">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      required
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName" className="text-red-700 font-semibold">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      required
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="employeeId" className="text-red-700 font-semibold">Employee ID</Label>
+                    <Input
+                      id="employeeId"
+                      value={formData.employeeId}
+                      onChange={(e) => handleInputChange('employeeId', e.target.value)}
+                      required
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="lastName" className="text-red-700 font-semibold">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    required
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="dateOfBirth" className="text-red-700 font-semibold">Date of Birth</Label>
+                    <Input
+                      id="dateOfBirth"
+                      type="date"
+                      value={formData.dateOfBirth}
+                      onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="gender" className="text-red-700 font-semibold">Gender</Label>
+                    <Select value={formData.gender} onValueChange={handleGenderChange}>
+                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="bloodGroup" className="text-red-700 font-semibold">Blood Group</Label>
+                    <Select value={formData.bloodGroup} onValueChange={(value) => handleInputChange('bloodGroup', value)}>
+                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                        <SelectValue placeholder="Select blood group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A+">A+</SelectItem>
+                        <SelectItem value="A-">A-</SelectItem>
+                        <SelectItem value="B+">B+</SelectItem>
+                        <SelectItem value="B-">B-</SelectItem>
+                        <SelectItem value="AB+">AB+</SelectItem>
+                        <SelectItem value="AB-">AB-</SelectItem>
+                        <SelectItem value="O+">O+</SelectItem>
+                        <SelectItem value="O-">O-</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="nationality" className="text-red-700 font-semibold">Nationality</Label>
+                    <Input
+                      id="nationality"
+                      value={formData.nationality}
+                      onChange={(e) => handleInputChange('nationality', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="maritalStatus" className="text-red-700 font-semibold">Marital Status</Label>
+                    <Select value={formData.maritalStatus} onValueChange={(value) => handleInputChange('maritalStatus', value)}>
+                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                        <SelectValue placeholder="Select marital status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="single">Single</SelectItem>
+                        <SelectItem value="married">Married</SelectItem>
+                        <SelectItem value="divorced">Divorced</SelectItem>
+                        <SelectItem value="widowed">Widowed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Contact Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-amber-500 border-b border-slate-600 pb-2">Contact Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="email" className="text-red-700 font-semibold">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      required
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone" className="text-red-700 font-semibold">Phone</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <Label htmlFor="email" className="text-red-700 font-semibold">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    required
+                  <Label htmlFor="address" className="text-red-700 font-semibold">Address</Label>
+                  <Textarea
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
                     className="bg-slate-700 border-slate-600 text-white"
+                    rows={3}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="phone" className="text-red-700 font-semibold">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="emergencyContactName" className="text-red-700 font-semibold">Emergency Contact Name</Label>
+                    <Input
+                      id="emergencyContactName"
+                      value={formData.emergencyContactName}
+                      onChange={(e) => handleInputChange('emergencyContactName', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="emergencyContactPhone" className="text-red-700 font-semibold">Emergency Contact Phone</Label>
+                    <Input
+                      id="emergencyContactPhone"
+                      value={formData.emergencyContactPhone}
+                      onChange={(e) => handleInputChange('emergencyContactPhone', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="employeeId" className="text-red-700 font-semibold">Employee ID</Label>
-                  <Input
-                    id="employeeId"
-                    value={formData.employeeId}
-                    onChange={(e) => handleInputChange('employeeId', e.target.value)}
-                    required
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
+              {/* Academic Qualifications */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-amber-500 border-b border-slate-600 pb-2">Academic Qualifications</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="qualification" className="text-red-700 font-semibold">Qualification</Label>
+                    <Input
+                      id="qualification"
+                      value={formData.qualification}
+                      onChange={(e) => handleInputChange('qualification', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="e.g., M.Ed, B.Ed, M.A."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="specialization" className="text-red-700 font-semibold">Specialization</Label>
+                    <Input
+                      id="specialization"
+                      value={formData.specialization}
+                      onChange={(e) => handleInputChange('specialization', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="e.g., Mathematics, Science"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="hireDate" className="text-red-700 font-semibold">Hire Date</Label>
-                  <Input
-                    id="hireDate"
-                    type="date"
-                    value={formData.hireDate}
-                    onChange={(e) => handleInputChange('hireDate', e.target.value)}
-                    required
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="experience" className="text-red-700 font-semibold">Years of Experience</Label>
+                    <Input
+                      id="experience"
+                      type="number"
+                      value={formData.experience}
+                      onChange={(e) => handleInputChange('experience', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="Years"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="previousInstitution" className="text-red-700 font-semibold">Previous Institution</Label>
+                    <Input
+                      id="previousInstitution"
+                      value={formData.previousInstitution}
+                      onChange={(e) => handleInputChange('previousInstitution', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="salary" className="text-red-700 font-semibold">Salary</Label>
-                  <Input
-                    id="salary"
-                    type="number"
-                    value={formData.salary}
-                    onChange={(e) => handleInputChange('salary', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="teachingLevel" className="text-red-700 font-semibold">Teaching Level</Label>
+                    <Select value={formData.teachingLevel} onValueChange={(value) => handleInputChange('teachingLevel', value)}>
+                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                        <SelectValue placeholder="Select teaching level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="primary">Primary (1-5)</SelectItem>
+                        <SelectItem value="middle">Middle (6-8)</SelectItem>
+                        <SelectItem value="secondary">Secondary (9-10)</SelectItem>
+                        <SelectItem value="higher_secondary">Higher Secondary (11-12)</SelectItem>
+                        <SelectItem value="all">All Levels</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="department" className="text-red-700 font-semibold">Department</Label>
+                    <Input
+                      id="department"
+                      value={formData.department}
+                      onChange={(e) => handleInputChange('department', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="e.g., Science, Arts, Commerce"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="qualification" className="text-red-700 font-semibold">Qualification</Label>
-                  <Input
-                    id="qualification"
-                    value={formData.qualification}
-                    onChange={(e) => handleInputChange('qualification', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
+              {/* Employment Details */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-amber-500 border-b border-slate-600 pb-2">Employment Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="hireDate" className="text-red-700 font-semibold">Hire Date</Label>
+                    <Input
+                      id="hireDate"
+                      type="date"
+                      value={formData.hireDate}
+                      onChange={(e) => handleInputChange('hireDate', e.target.value)}
+                      required
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="salary" className="text-red-700 font-semibold">Salary</Label>
+                    <Input
+                      id="salary"
+                      type="number"
+                      value={formData.salary}
+                      onChange={(e) => handleInputChange('salary', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contractType" className="text-red-700 font-semibold">Contract Type</Label>
+                    <Select value={formData.contractType} onValueChange={(value) => handleInputChange('contractType', value)}>
+                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                        <SelectValue placeholder="Select contract type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="permanent">Permanent</SelectItem>
+                        <SelectItem value="temporary">Temporary</SelectItem>
+                        <SelectItem value="contract">Contract</SelectItem>
+                        <SelectItem value="probation">Probation</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="specialization" className="text-red-700 font-semibold">Specialization</Label>
-                  <Input
-                    id="specialization"
-                    value={formData.specialization}
-                    onChange={(e) => handleInputChange('specialization', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="probationPeriod" className="text-red-700 font-semibold">Probation Period (months)</Label>
+                    <Input
+                      id="probationPeriod"
+                      type="number"
+                      value={formData.probationPeriod}
+                      onChange={(e) => handleInputChange('probationPeriod', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="e.g., 6"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="workingHours" className="text-red-700 font-semibold">Working Hours</Label>
+                    <Select value={formData.workingHours} onValueChange={(value) => handleInputChange('workingHours', value)}>
+                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                        <SelectValue placeholder="Select working hours" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="full_time">Full Time (8 hours)</SelectItem>
+                        <SelectItem value="part_time">Part Time (4 hours)</SelectItem>
+                        <SelectItem value="flexible">Flexible</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="mentorAssigned"
+                      checked={formData.mentorAssigned}
+                      onChange={(e) => handleCheckboxChange('mentorAssigned', e.target.checked)}
+                      className="rounded border-slate-600 text-green-600 focus:ring-green-500"
+                    />
+                    <Label htmlFor="mentorAssigned" className="text-white">
+                      Mentor Assigned
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="trainingCompleted"
+                      checked={formData.trainingCompleted}
+                      onChange={(e) => handleCheckboxChange('trainingCompleted', e.target.checked)}
+                      className="rounded border-slate-600 text-green-600 focus:ring-green-500"
+                    />
+                    <Label htmlFor="trainingCompleted" className="text-white">
+                      Initial Training Completed
+                    </Label>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="dateOfBirth" className="text-red-700 font-semibold">Date of Birth</Label>
-                  <Input
-                    id="dateOfBirth"
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="gender" className="text-red-700 font-semibold">Gender</Label>
-                  <Select value={formData.gender} onValueChange={handleGenderChange}>
-                    <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="address" className="text-red-700 font-semibold">Address</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  className="bg-slate-700 border-slate-600 text-white"
-                />
-              </div>
-
-              <div>
-                <Label className="text-red-700 font-semibold">Subjects</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+              {/* Subjects */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-amber-500 border-b border-slate-600 pb-2">Subjects</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {subjects?.map((subject) => (
                     <div key={subject.id} className="flex items-center space-x-2">
                       <input

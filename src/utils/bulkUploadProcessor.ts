@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -32,7 +31,6 @@ export class BulkUploadProcessor {
       try {
         console.log(`Processing student row ${i + 1}:`, row);
 
-        // Validate required fields with better error messages
         const missingFields: string[] = [];
         if (!row.first_name || String(row.first_name).trim() === '') missingFields.push('first_name');
         if (!row.last_name || String(row.last_name).trim() === '') missingFields.push('last_name');
@@ -42,20 +40,15 @@ export class BulkUploadProcessor {
           throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
         }
 
-        // Validate email format
         const email = String(row.email).trim();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
           throw new Error('Invalid email format');
         }
 
-        // Validate and type the gender field
         const gender = this.validateGender(String(row.gender || ''));
-        
-        // Generate a UUID for the profile
         const profileId = uuidv4();
         
-        // Create profile first
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .insert({
@@ -69,6 +62,8 @@ export class BulkUploadProcessor {
             date_of_birth: this.parseDate(String(row.date_of_birth || '')),
             gender: gender,
             address: String(row.address || '').trim(),
+            emergency_contact_name: String(row.emergency_contact_name || '').trim(),
+            emergency_contact_phone: String(row.emergency_contact_phone || '').trim(),
           })
           .select()
           .single();
@@ -78,7 +73,6 @@ export class BulkUploadProcessor {
           throw new Error(`Failed to create profile: ${profileError.message}`);
         }
 
-        // Create student record
         const { error: studentError } = await supabase
           .from('students')
           .insert({
@@ -96,7 +90,6 @@ export class BulkUploadProcessor {
           throw new Error(`Failed to create student record: ${studentError.message}`);
         }
 
-        // Generate credentials
         await this.generateCredentials(profile.id, profile.first_name, profile.last_name, 'student');
         
         successCount++;
@@ -129,7 +122,6 @@ export class BulkUploadProcessor {
       try {
         console.log(`Processing teacher row ${i + 1}:`, row);
 
-        // Validate required fields
         const missingFields: string[] = [];
         if (!row.first_name || String(row.first_name).trim() === '') missingFields.push('first_name');
         if (!row.last_name || String(row.last_name).trim() === '') missingFields.push('last_name');
@@ -139,20 +131,15 @@ export class BulkUploadProcessor {
           throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
         }
 
-        // Validate email format
         const email = String(row.email).trim();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
           throw new Error('Invalid email format');
         }
 
-        // Validate and type the gender field
         const gender = this.validateGender(String(row.gender || ''));
-        
-        // Generate a UUID for the profile
         const profileId = uuidv4();
         
-        // Create profile first
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .insert({
@@ -166,6 +153,9 @@ export class BulkUploadProcessor {
             date_of_birth: this.parseDate(String(row.date_of_birth || '')),
             gender: gender,
             address: String(row.address || '').trim(),
+            emergency_contact_name: String(row.emergency_contact_name || '').trim(),
+            emergency_contact_phone: String(row.emergency_contact_phone || '').trim(),
+            employee_id: String(row.employee_id || `TCH${Date.now()}${successCount}`).trim(),
           })
           .select()
           .single();
@@ -175,7 +165,6 @@ export class BulkUploadProcessor {
           throw new Error(`Failed to create profile: ${profileError.message}`);
         }
 
-        // Create teacher record
         const { error: teacherError } = await supabase
           .from('teachers')
           .insert({
@@ -192,7 +181,6 @@ export class BulkUploadProcessor {
           throw new Error(`Failed to create teacher record: ${teacherError.message}`);
         }
 
-        // Generate credentials
         await this.generateCredentials(profile.id, profile.first_name, profile.last_name, 'teacher');
         
         successCount++;
@@ -225,7 +213,6 @@ export class BulkUploadProcessor {
       try {
         console.log(`Processing staff row ${i + 1}:`, row);
 
-        // Validate required fields
         const missingFields: string[] = [];
         if (!row.first_name || String(row.first_name).trim() === '') missingFields.push('first_name');
         if (!row.last_name || String(row.last_name).trim() === '') missingFields.push('last_name');
@@ -235,20 +222,15 @@ export class BulkUploadProcessor {
           throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
         }
 
-        // Validate email format
         const email = String(row.email).trim();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
           throw new Error('Invalid email format');
         }
 
-        // Validate and type the gender field
         const gender = this.validateGender(String(row.gender || ''));
-        
-        // Generate a UUID for the profile
         const profileId = uuidv4();
         
-        // Create profile first
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .insert({
@@ -257,11 +239,14 @@ export class BulkUploadProcessor {
             last_name: String(row.last_name).trim(),
             email: email,
             phone: String(row.phone || '').trim(),
-            role: 'admin' as const, // Staff gets admin role
+            role: 'admin' as const,
             school_id: this.schoolId,
             date_of_birth: this.parseDate(String(row.date_of_birth || '')),
             gender: gender,
             address: String(row.address || '').trim(),
+            emergency_contact_name: String(row.emergency_contact_name || '').trim(),
+            emergency_contact_phone: String(row.emergency_contact_phone || '').trim(),
+            employee_id: String(row.employee_id || `STF${Date.now()}${successCount}`).trim(),
           })
           .select()
           .single();
@@ -271,7 +256,6 @@ export class BulkUploadProcessor {
           throw new Error(`Failed to create profile: ${profileError.message}`);
         }
 
-        // Create staff record
         const { error: staffError } = await supabase
           .from('staff')
           .insert({
@@ -287,7 +271,6 @@ export class BulkUploadProcessor {
           throw new Error(`Failed to create staff record: ${staffError.message}`);
         }
 
-        // Generate credentials
         await this.generateCredentials(profile.id, profile.first_name, profile.last_name, 'admin');
         
         successCount++;
@@ -358,7 +341,6 @@ export class BulkUploadProcessor {
         });
     } catch (error) {
       console.error('Error generating credentials:', error);
-      // Don't throw here as the profile creation was successful
     }
   }
 
@@ -372,13 +354,11 @@ export class BulkUploadProcessor {
           if (typeof data === 'string') {
             console.log('Raw file content:', data.substring(0, 500));
             
-            // Improved CSV parsing
             const lines = data.split('\n').filter(line => line.trim() !== '');
             if (lines.length === 0) {
               throw new Error('File is empty or contains no data');
             }
 
-            // Parse headers - handle potential quotes and trim whitespace
             const headerLine = lines[0];
             const headers = this.parseCSVLine(headerLine).map(h => h.trim().toLowerCase());
             console.log('Parsed headers:', headers);
@@ -399,7 +379,6 @@ export class BulkUploadProcessor {
                   row[header] = values[index]?.trim() || '';
                 });
                 
-                // Only add rows that have at least some data
                 const hasData = Object.values(row).some(value => String(value).trim() !== '');
                 if (hasData) {
                   rows.push(row);
