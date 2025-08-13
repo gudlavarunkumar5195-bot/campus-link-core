@@ -22,6 +22,8 @@ const SchoolConfiguration = () => {
     return <SchoolAssociation />;
   }
 
+  const schoolId = profile.school_id;
+
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -39,7 +41,7 @@ const SchoolConfiguration = () => {
         <TabsContent value="settings" className="mt-6">
           <Card>
             <CardContent className="p-6">
-              <SchoolSettingsForm />
+              <SchoolSettingsForm schoolId={schoolId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -47,7 +49,7 @@ const SchoolConfiguration = () => {
         <TabsContent value="bulk-upload" className="mt-6">
           <Card>
             <CardContent className="p-6">
-              <BulkUploadForm />
+              <BulkUploadForm schoolId={schoolId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -55,7 +57,7 @@ const SchoolConfiguration = () => {
         <TabsContent value="credentials" className="mt-6">
           <Card>
             <CardContent className="p-6">
-              <UserCredentialsManager />
+              <UserCredentialsManager schoolId={schoolId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -79,7 +81,10 @@ const SchoolConfiguration = () => {
         <TabsContent value="custom-fields" className="mt-6">
           <Card>
             <CardContent className="p-6">
-              <CustomFieldForm />
+              <CustomFieldForm 
+                schoolId={schoolId}
+                onClose={() => {}}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -87,7 +92,10 @@ const SchoolConfiguration = () => {
         <TabsContent value="document-types" className="mt-6">
           <Card>
             <CardContent className="p-6">
-              <DocumentTypeForm />
+              <DocumentTypeForm 
+                schoolId={schoolId}
+                onClose={() => {}}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -95,7 +103,10 @@ const SchoolConfiguration = () => {
         <TabsContent value="fee-heads" className="mt-6">
           <Card>
             <CardContent className="p-6">
-              <FeeHeadForm />
+              <FeeHeadForm 
+                schoolId={schoolId}
+                onClose={() => {}}
+              />
             </CardContent>
           </Card>
         </TabsContent>
