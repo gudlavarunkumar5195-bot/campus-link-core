@@ -2,89 +2,88 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowLeft, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import { useClasses, GENDER_OPTIONS, BLOOD_GROUPS, TRANSPORT_MODES, RELIGIONS, GUARDIAN_RELATIONSHIPS, FEE_CATEGORIES } from '@/hooks/useDropdownData';
 
 const AddStudent = () => {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const { data: classes = [] } = useClasses();
   
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
+    // Personal Information
     first_name: '',
     last_name: '',
     email: '',
     phone: '',
     date_of_birth: '',
     gender: '',
-    address: '',
-    student_id: '',
-    admission_date: '',
-    parent_name: '',
-    parent_phone: '',
-    parent_email: '',
-    medical_info: '',
-    emergency_contact_name: '',
-    emergency_contact_phone: '',
     blood_group: '',
     nationality: '',
     religion: '',
+    address: '',
+    
+    // Academic Information
+    student_id: '',
+    roll_number: '',
+    admission_date: '',
+    class_id: '',
+    section: '',
+    academic_year: new Date().getFullYear().toString(),
+    previous_class: '',
     previous_school: '',
+    tc_number: '',
+    
+    // Parent/Guardian Information
+    parent_name: '',
+    parent_phone: '',
+    parent_email: '',
+    guardian_name: '',
+    guardian_phone: '',
+    guardian_email: '',
+    guardian_relationship: '',
+    
+    // Emergency Contact
+    emergency_contact_name: '',
+    emergency_contact_phone: '',
+    
+    // Health Information
+    medical_info: '',
+    medical_conditions: '',
+    allergies: '',
+    special_needs: '',
+    
+    // Transport & Accommodation
     transport_mode: '',
+    transport_required: false,
+    hostel_resident: false,
+    
+    // Fee Information
     fee_category: '',
-    scholarship_applicable: false,
-    hostel_required: false,
-    class_preference: '',
-    documents_submitted: [] as string[],
+    scholarship_details: '',
+    
+    // Additional
+    documents_submitted: [] as string[]
   });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({
-        ...prev,
-        [name]: checked
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-  };
-
-  const handleSelectChange = (value: string, name: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleDocumentToggle = (document: string) => {
-    setFormData(prev => ({
-      ...prev,
-      documents_submitted: prev.documents_submitted.includes(document)
-        ? prev.documents_submitted.filter(doc => doc !== document)
-        : [...prev.documents_submitted, document]
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile?.school_id) {
       toast({
         title: "Error",
-        description: "No school association found. Please contact your administrator.",
-        variant: "destructive",
+        description: "School information not found",
+        variant: "destructive"
       });
       return;
     }
@@ -94,7 +93,8 @@ const AddStudent = () => {
     try {
       const profileId = uuidv4();
       
-      const { data: newProfile, error: profileError } = await supabase
+      // Create profile
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: profileId,
@@ -102,53 +102,56 @@ const AddStudent = () => {
           last_name: formData.last_name,
           email: formData.email,
           phone: formData.phone,
-          role: 'student' as const,
+          role: 'student',
           school_id: profile.school_id,
           date_of_birth: formData.date_of_birth || null,
-          gender: formData.gender as 'male' | 'female' | 'other' || null,
+          gender: formData.gender || null,
           address: formData.address,
           emergency_contact_name: formData.emergency_contact_name,
           emergency_contact_phone: formData.emergency_contact_phone,
+          nationality: formData.nationality,
+          religion: formData.religion,
+          blood_group: formData.blood_group,
+          previous_school: formData.previous_school,
+          guardian_name: formData.guardian_name,
+          guardian_phone: formData.guardian_phone,
+          guardian_email: formData.guardian_email,
+          guardian_relationship: formData.guardian_relationship,
+          transport_mode: formData.transport_mode,
+          medical_conditions: formData.medical_conditions,
+          allergies: formData.allergies,
+          special_needs: formData.special_needs,
         })
         .select()
         .single();
 
       if (profileError) throw profileError;
 
+      // Create student record
       const { error: studentError } = await supabase
         .from('students')
         .insert({
-          profile_id: newProfile.id,
-          student_id: formData.student_id || `STD${Date.now()}`,
-          admission_date: formData.admission_date || new Date().toISOString().split('T')[0],
+          profile_id: profileId,
+          student_id: formData.student_id,
+          roll_number: formData.roll_number,
+          class_id: formData.class_id || null,
+          admission_date: formData.admission_date,
           parent_name: formData.parent_name,
           parent_phone: formData.parent_phone,
           parent_email: formData.parent_email,
           medical_info: formData.medical_info,
+          academic_year: formData.academic_year,
+          section: formData.section,
+          hostel_resident: formData.hostel_resident,
+          transport_required: formData.transport_required,
+          fee_category: formData.fee_category,
+          scholarship_details: formData.scholarship_details,
+          previous_class: formData.previous_class,
+          tc_number: formData.tc_number,
+          documents_submitted: formData.documents_submitted,
         });
 
       if (studentError) throw studentError;
-
-      try {
-        const { data: username } = await supabase.rpc('generate_username', {
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          role: 'student',
-          school_id: profile.school_id
-        });
-
-        const defaultPassword = 'School' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-
-        await supabase
-          .from('user_credentials')
-          .insert({
-            profile_id: newProfile.id,
-            username: username,
-            default_password: defaultPassword,
-          });
-      } catch (credError) {
-        console.warn('Failed to generate credentials:', credError);
-      }
 
       toast({
         title: "Success",
@@ -161,405 +164,470 @@ const AddStudent = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to add student",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
 
-  if (!profile?.school_id) {
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  if (!user || !profile) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="text-center py-8">
-            <h2 className="text-2xl font-bold mb-2 text-gray-900">No School Association</h2>
-            <p className="text-gray-600 mb-4">
-              Please associate your account with a school first.
-            </p>
-            <Button onClick={() => navigate('/school-config')} variant="outline">
-              Go to School Configuration
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2 text-gray-900">Access Denied</h2>
+          <p className="text-gray-600">Please log in to continue.</p>
+        </div>
       </div>
     );
   }
 
-  const documentTypes = [
-    'Birth Certificate',
-    'Previous School TC',
-    'Aadhar Card',
-    'Passport Photo',
-    'Medical Certificate',
-    'Caste Certificate',
-    'Income Certificate'
-  ];
-
   return (
-    <div className="min-h-screen bg-white p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center space-x-4 mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(-1)}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back</span>
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900">Add Student</h1>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back</span>
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <UserPlus className="h-8 w-8" />
+                Add Student
+              </h1>
+              <p className="text-gray-600">Add a new student to the school</p>
+            </div>
+          </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Student Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Basic Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold border-b pb-2">Basic Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="first_name">First Name *</Label>
-                    <Input
-                      id="first_name"
-                      name="first_name"
-                      value={formData.first_name}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="last_name">Last Name *</Label>
-                    <Input
-                      id="last_name"
-                      name="last_name"
-                      value={formData.last_name}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="student_id">Student ID</Label>
-                    <Input
-                      id="student_id"
-                      name="student_id"
-                      value={formData.student_id}
-                      onChange={handleChange}
-                      placeholder="Auto-generated if empty"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="date_of_birth">Date of Birth</Label>
-                    <Input
-                      id="date_of_birth"
-                      name="date_of_birth"
-                      type="date"
-                      value={formData.date_of_birth}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="gender">Gender</Label>
-                    <Select onValueChange={(value) => handleSelectChange(value, 'gender')}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="blood_group">Blood Group</Label>
-                    <Select onValueChange={(value) => handleSelectChange(value, 'blood_group')}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select blood group" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="A+">A+</SelectItem>
-                        <SelectItem value="A-">A-</SelectItem>
-                        <SelectItem value="B+">B+</SelectItem>
-                        <SelectItem value="B-">B-</SelectItem>
-                        <SelectItem value="AB+">AB+</SelectItem>
-                        <SelectItem value="AB-">AB-</SelectItem>
-                        <SelectItem value="O+">O+</SelectItem>
-                        <SelectItem value="O-">O-</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="nationality">Nationality</Label>
-                    <Input
-                      id="nationality"
-                      name="nationality"
-                      value={formData.nationality}
-                      onChange={handleChange}
-                      placeholder="e.g., Indian"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="religion">Religion</Label>
-                    <Input
-                      id="religion"
-                      name="religion"
-                      value={formData.religion}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Personal Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Personal Information</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="first_name">First Name *</Label>
+                <Input
+                  id="first_name"
+                  value={formData.first_name}
+                  onChange={(e) => handleInputChange('first_name', e.target.value)}
+                  required
+                />
               </div>
-
-              {/* Contact Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold border-b pb-2">Contact Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="address">Address</Label>
-                  <Textarea
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    rows={3}
-                  />
-                </div>
+              <div>
+                <Label htmlFor="last_name">Last Name *</Label>
+                <Input
+                  id="last_name"
+                  value={formData.last_name}
+                  onChange={(e) => handleInputChange('last_name', e.target.value)}
+                  required
+                />
               </div>
-
-              {/* Emergency Contact */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold border-b pb-2">Emergency Contact</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="emergency_contact_name">Emergency Contact Name</Label>
-                    <Input
-                      id="emergency_contact_name"
-                      name="emergency_contact_name"
-                      value={formData.emergency_contact_name}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="emergency_contact_phone">Emergency Contact Phone</Label>
-                    <Input
-                      id="emergency_contact_phone"
-                      name="emergency_contact_phone"
-                      value={formData.emergency_contact_phone}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
+              <div>
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  required
+                />
               </div>
-
-              {/* Parent/Guardian Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold border-b pb-2">Parent/Guardian Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="parent_name">Parent/Guardian Name</Label>
-                    <Input
-                      id="parent_name"
-                      name="parent_name"
-                      value={formData.parent_name}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="parent_phone">Parent/Guardian Phone</Label>
-                    <Input
-                      id="parent_phone"
-                      name="parent_phone"
-                      value={formData.parent_phone}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="parent_email">Parent/Guardian Email</Label>
-                    <Input
-                      id="parent_email"
-                      name="parent_email"
-                      type="email"
-                      value={formData.parent_email}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
+              <div>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                />
               </div>
-
-              {/* Academic Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold border-b pb-2">Academic Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="admission_date">Admission Date</Label>
-                    <Input
-                      id="admission_date"
-                      name="admission_date"
-                      type="date"
-                      value={formData.admission_date}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="class_preference">Class Preference</Label>
-                    <Input
-                      id="class_preference"
-                      name="class_preference"
-                      value={formData.class_preference}
-                      onChange={handleChange}
-                      placeholder="e.g., 10th Grade"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="previous_school">Previous School</Label>
-                    <Input
-                      id="previous_school"
-                      name="previous_school"
-                      value={formData.previous_school}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="transport_mode">Transport Mode</Label>
-                    <Select onValueChange={(value) => handleSelectChange(value, 'transport_mode')}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select transport mode" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="school_bus">School Bus</SelectItem>
-                        <SelectItem value="private">Private Vehicle</SelectItem>
-                        <SelectItem value="walking">Walking</SelectItem>
-                        <SelectItem value="public_transport">Public Transport</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="fee_category">Fee Category</Label>
-                    <Select onValueChange={(value) => handleSelectChange(value, 'fee_category')}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select fee category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="general">General</SelectItem>
-                        <SelectItem value="management">Management Quota</SelectItem>
-                        <SelectItem value="scholarship">Scholarship</SelectItem>
-                        <SelectItem value="staff_ward">Staff Ward</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="scholarship_applicable"
-                      name="scholarship_applicable"
-                      checked={formData.scholarship_applicable}
-                      onChange={handleChange}
-                      className="rounded"
-                    />
-                    <Label htmlFor="scholarship_applicable">Scholarship Applicable</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="hostel_required"
-                      name="hostel_required"
-                      checked={formData.hostel_required}
-                      onChange={handleChange}
-                      className="rounded"
-                    />
-                    <Label htmlFor="hostel_required">Hostel Required</Label>
-                  </div>
-                </div>
+              <div>
+                <Label htmlFor="date_of_birth">Date of Birth</Label>
+                <Input
+                  id="date_of_birth"
+                  type="date"
+                  value={formData.date_of_birth}
+                  onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+                />
               </div>
-
-              {/* Documents */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold border-b pb-2">Documents Submitted</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {documentTypes.map((document) => (
-                    <div key={document} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`doc-${document}`}
-                        checked={formData.documents_submitted.includes(document)}
-                        onChange={() => handleDocumentToggle(document)}
-                        className="rounded"
-                      />
-                      <Label htmlFor={`doc-${document}`} className="text-sm">
-                        {document}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
+              <div>
+                <Label htmlFor="gender">Gender</Label>
+                <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                    {GENDER_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-
-              {/* Medical Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold border-b pb-2">Medical Information</h3>
-                <div>
-                  <Label htmlFor="medical_info">Medical Information / Allergies</Label>
-                  <Textarea
-                    id="medical_info"
-                    name="medical_info"
-                    value={formData.medical_info}
-                    onChange={handleChange}
-                    rows={3}
-                    placeholder="Any medical conditions, allergies, or special requirements"
-                  />
-                </div>
+              <div>
+                <Label htmlFor="blood_group">Blood Group</Label>
+                <Select value={formData.blood_group} onValueChange={(value) => handleInputChange('blood_group', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select blood group" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                    {BLOOD_GROUPS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+              <div>
+                <Label htmlFor="nationality">Nationality</Label>
+                <Input
+                  id="nationality"
+                  value={formData.nationality}
+                  onChange={(e) => handleInputChange('nationality', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="religion">Religion</Label>
+                <Select value={formData.religion} onValueChange={(value) => handleInputChange('religion', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select religion" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                    {RELIGIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="md:col-span-2">
+                <Label htmlFor="address">Address</Label>
+                <Textarea
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-              <Button type="submit" disabled={loading} className="w-full">
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Adding Student...
-                  </>
-                ) : (
-                  'Add Student'
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+          {/* Academic Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Academic Information</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="student_id">Student ID *</Label>
+                <Input
+                  id="student_id"
+                  value={formData.student_id}
+                  onChange={(e) => handleInputChange('student_id', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="roll_number">Roll Number</Label>
+                <Input
+                  id="roll_number"
+                  value={formData.roll_number}
+                  onChange={(e) => handleInputChange('roll_number', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="admission_date">Admission Date *</Label>
+                <Input
+                  id="admission_date"
+                  type="date"
+                  value={formData.admission_date}
+                  onChange={(e) => handleInputChange('admission_date', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="class_id">Class</Label>
+                <Select value={formData.class_id} onValueChange={(value) => handleInputChange('class_id', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select class" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                    {classes.map((cls) => (
+                      <SelectItem key={cls.id} value={cls.id}>
+                        {cls.name} - Grade {cls.grade_level}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="section">Section</Label>
+                <Input
+                  id="section"
+                  value={formData.section}
+                  onChange={(e) => handleInputChange('section', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="academic_year">Academic Year</Label>
+                <Input
+                  id="academic_year"
+                  value={formData.academic_year}
+                  onChange={(e) => handleInputChange('academic_year', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="previous_class">Previous Class</Label>
+                <Input
+                  id="previous_class"
+                  value={formData.previous_class}
+                  onChange={(e) => handleInputChange('previous_class', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="previous_school">Previous School</Label>
+                <Input
+                  id="previous_school"
+                  value={formData.previous_school}
+                  onChange={(e) => handleInputChange('previous_school', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="tc_number">TC Number</Label>
+                <Input
+                  id="tc_number"
+                  value={formData.tc_number}
+                  onChange={(e) => handleInputChange('tc_number', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Parent/Guardian Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Parent/Guardian Information</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="parent_name">Parent Name</Label>
+                <Input
+                  id="parent_name"
+                  value={formData.parent_name}
+                  onChange={(e) => handleInputChange('parent_name', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="parent_phone">Parent Phone</Label>
+                <Input
+                  id="parent_phone"
+                  value={formData.parent_phone}
+                  onChange={(e) => handleInputChange('parent_phone', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="parent_email">Parent Email</Label>
+                <Input
+                  id="parent_email"
+                  type="email"
+                  value={formData.parent_email}
+                  onChange={(e) => handleInputChange('parent_email', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="guardian_name">Guardian Name</Label>
+                <Input
+                  id="guardian_name"
+                  value={formData.guardian_name}
+                  onChange={(e) => handleInputChange('guardian_name', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="guardian_phone">Guardian Phone</Label>
+                <Input
+                  id="guardian_phone"
+                  value={formData.guardian_phone}
+                  onChange={(e) => handleInputChange('guardian_phone', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="guardian_email">Guardian Email</Label>
+                <Input
+                  id="guardian_email"
+                  type="email"
+                  value={formData.guardian_email}
+                  onChange={(e) => handleInputChange('guardian_email', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="guardian_relationship">Guardian Relationship</Label>
+                <Select value={formData.guardian_relationship} onValueChange={(value) => handleInputChange('guardian_relationship', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select relationship" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                    {GUARDIAN_RELATIONSHIPS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="emergency_contact_name">Emergency Contact Name</Label>
+                <Input
+                  id="emergency_contact_name"
+                  value={formData.emergency_contact_name}
+                  onChange={(e) => handleInputChange('emergency_contact_name', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="emergency_contact_phone">Emergency Contact Phone</Label>
+                <Input
+                  id="emergency_contact_phone"
+                  value={formData.emergency_contact_phone}
+                  onChange={(e) => handleInputChange('emergency_contact_phone', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Health & Medical Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Health & Medical Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="medical_info">Medical Information</Label>
+                <Textarea
+                  id="medical_info"
+                  value={formData.medical_info}
+                  onChange={(e) => handleInputChange('medical_info', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="medical_conditions">Medical Conditions</Label>
+                <Textarea
+                  id="medical_conditions"
+                  value={formData.medical_conditions}
+                  onChange={(e) => handleInputChange('medical_conditions', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="allergies">Allergies</Label>
+                <Textarea
+                  id="allergies"
+                  value={formData.allergies}
+                  onChange={(e) => handleInputChange('allergies', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="special_needs">Special Needs</Label>
+                <Textarea
+                  id="special_needs"
+                  value={formData.special_needs}
+                  onChange={(e) => handleInputChange('special_needs', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Transport & Accommodation */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Transport & Accommodation</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="transport_mode">Transport Mode</Label>
+                <Select value={formData.transport_mode} onValueChange={(value) => handleInputChange('transport_mode', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select transport mode" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                    {TRANSPORT_MODES.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="transport_required"
+                  checked={formData.transport_required}
+                  onCheckedChange={(checked) => handleInputChange('transport_required', checked)}
+                />
+                <Label htmlFor="transport_required">Transport Required</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="hostel_resident"
+                  checked={formData.hostel_resident}
+                  onCheckedChange={(checked) => handleInputChange('hostel_resident', checked)}
+                />
+                <Label htmlFor="hostel_resident">Hostel Resident</Label>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Fee Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Fee Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="fee_category">Fee Category</Label>
+                <Select value={formData.fee_category} onValueChange={(value) => handleInputChange('fee_category', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select fee category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                    {FEE_CATEGORIES.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="scholarship_details">Scholarship Details</Label>
+                <Textarea
+                  id="scholarship_details"
+                  value={formData.scholarship_details}
+                  onChange={(e) => handleInputChange('scholarship_details', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end space-x-4">
+            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Adding Student...' : 'Add Student'}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

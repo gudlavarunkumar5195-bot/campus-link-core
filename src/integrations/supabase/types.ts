@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -441,6 +441,51 @@ export type Database = {
           },
         ]
       }
+      departments: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          head_id: string | null
+          id: string
+          name: string
+          school_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          head_id?: string | null
+          id?: string
+          name: string
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          head_id?: string | null
+          id?: string
+          name?: string
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_head_id_fkey"
+            columns: ["head_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "departments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_types: {
         Row: {
           created_at: string | null
@@ -593,7 +638,9 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          allergies: string | null
           avatar_url: string | null
+          blood_group: string | null
           created_at: string | null
           date_of_birth: string | null
           email: string
@@ -602,18 +649,30 @@ export type Database = {
           employee_id: string | null
           first_name: string
           gender: Database["public"]["Enums"]["gender"] | null
+          guardian_email: string | null
+          guardian_name: string | null
+          guardian_phone: string | null
+          guardian_relationship: string | null
           id: string
           is_active: boolean | null
           last_name: string
+          medical_conditions: string | null
+          nationality: string | null
           phone: string | null
+          previous_school: string | null
+          religion: string | null
           role: Database["public"]["Enums"]["user_role"]
           roll_number: string | null
           school_id: string | null
+          special_needs: string | null
+          transport_mode: string | null
           updated_at: string | null
         }
         Insert: {
           address?: string | null
+          allergies?: string | null
           avatar_url?: string | null
+          blood_group?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           email: string
@@ -622,18 +681,30 @@ export type Database = {
           employee_id?: string | null
           first_name: string
           gender?: Database["public"]["Enums"]["gender"] | null
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          guardian_relationship?: string | null
           id: string
           is_active?: boolean | null
           last_name: string
+          medical_conditions?: string | null
+          nationality?: string | null
           phone?: string | null
+          previous_school?: string | null
+          religion?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           roll_number?: string | null
           school_id?: string | null
+          special_needs?: string | null
+          transport_mode?: string | null
           updated_at?: string | null
         }
         Update: {
           address?: string | null
+          allergies?: string | null
           avatar_url?: string | null
+          blood_group?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           email?: string
@@ -642,13 +713,23 @@ export type Database = {
           employee_id?: string | null
           first_name?: string
           gender?: Database["public"]["Enums"]["gender"] | null
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          guardian_relationship?: string | null
           id?: string
           is_active?: boolean | null
           last_name?: string
+          medical_conditions?: string | null
+          nationality?: string | null
           phone?: string | null
+          previous_school?: string | null
+          religion?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           roll_number?: string | null
           school_id?: string | null
+          special_needs?: string | null
+          transport_mode?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -746,33 +827,60 @@ export type Database = {
       }
       staff: {
         Row: {
+          certifications: string[] | null
+          contract_end_date: string | null
           created_at: string | null
+          department: string | null
           employee_id: string
+          employment_type: string | null
           hire_date: string
           id: string
+          performance_rating: number | null
           position: string
+          probation_period: number | null
           profile_id: string | null
+          responsibilities: string[] | null
           salary: number | null
+          shift_timing: string | null
+          supervisor_id: string | null
           updated_at: string | null
         }
         Insert: {
+          certifications?: string[] | null
+          contract_end_date?: string | null
           created_at?: string | null
+          department?: string | null
           employee_id: string
+          employment_type?: string | null
           hire_date?: string
           id?: string
+          performance_rating?: number | null
           position: string
+          probation_period?: number | null
           profile_id?: string | null
+          responsibilities?: string[] | null
           salary?: number | null
+          shift_timing?: string | null
+          supervisor_id?: string | null
           updated_at?: string | null
         }
         Update: {
+          certifications?: string[] | null
+          contract_end_date?: string | null
           created_at?: string | null
+          department?: string | null
           employee_id?: string
+          employment_type?: string | null
           hire_date?: string
           id?: string
+          performance_rating?: number | null
           position?: string
+          probation_period?: number | null
           profile_id?: string | null
+          responsibilities?: string[] | null
           salary?: number | null
+          shift_timing?: string | null
+          supervisor_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -783,46 +891,83 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "staff_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       students: {
         Row: {
+          academic_year: string | null
           admission_date: string
           class_id: string | null
           created_at: string | null
+          documents_submitted: string[] | null
+          fee_category: string | null
+          hostel_resident: boolean | null
           id: string
           medical_info: string | null
           parent_email: string | null
           parent_name: string | null
           parent_phone: string | null
+          previous_class: string | null
           profile_id: string | null
+          roll_number: string | null
+          scholarship_details: string | null
+          section: string | null
           student_id: string
+          tc_number: string | null
+          transport_required: boolean | null
           updated_at: string | null
         }
         Insert: {
+          academic_year?: string | null
           admission_date: string
           class_id?: string | null
           created_at?: string | null
+          documents_submitted?: string[] | null
+          fee_category?: string | null
+          hostel_resident?: boolean | null
           id?: string
           medical_info?: string | null
           parent_email?: string | null
           parent_name?: string | null
           parent_phone?: string | null
+          previous_class?: string | null
           profile_id?: string | null
+          roll_number?: string | null
+          scholarship_details?: string | null
+          section?: string | null
           student_id: string
+          tc_number?: string | null
+          transport_required?: boolean | null
           updated_at?: string | null
         }
         Update: {
+          academic_year?: string | null
           admission_date?: string
           class_id?: string | null
           created_at?: string | null
+          documents_submitted?: string[] | null
+          fee_category?: string | null
+          hostel_resident?: boolean | null
           id?: string
           medical_info?: string | null
           parent_email?: string | null
           parent_name?: string | null
           parent_phone?: string | null
+          previous_class?: string | null
           profile_id?: string | null
+          roll_number?: string | null
+          scholarship_details?: string | null
+          section?: string | null
           student_id?: string
+          tc_number?: string | null
+          transport_required?: boolean | null
           updated_at?: string | null
         }
         Relationships: [
@@ -880,6 +1025,47 @@ export type Database = {
           },
         ]
       }
+      subjects_offered: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          description: string | null
+          grade_levels: number[] | null
+          id: string
+          name: string
+          school_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string | null
+          description?: string | null
+          grade_levels?: number[] | null
+          id?: string
+          name: string
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string | null
+          description?: string | null
+          grade_levels?: number[] | null
+          id?: string
+          name?: string
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subjects_offered_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teacher_subjects: {
         Row: {
           class_id: string | null
@@ -928,36 +1114,66 @@ export type Database = {
       }
       teachers: {
         Row: {
+          class_teacher_for: string | null
+          contract_end_date: string | null
           created_at: string | null
+          department: string | null
           employee_id: string
+          employment_type: string | null
+          experience_years: number | null
           hire_date: string
           id: string
+          performance_rating: number | null
+          previous_experience: string | null
+          probation_period: number | null
           profile_id: string | null
           qualification: string | null
           salary: number | null
           specialization: string | null
+          subjects_taught: string[] | null
+          training_certifications: string[] | null
           updated_at: string | null
         }
         Insert: {
+          class_teacher_for?: string | null
+          contract_end_date?: string | null
           created_at?: string | null
+          department?: string | null
           employee_id: string
+          employment_type?: string | null
+          experience_years?: number | null
           hire_date: string
           id?: string
+          performance_rating?: number | null
+          previous_experience?: string | null
+          probation_period?: number | null
           profile_id?: string | null
           qualification?: string | null
           salary?: number | null
           specialization?: string | null
+          subjects_taught?: string[] | null
+          training_certifications?: string[] | null
           updated_at?: string | null
         }
         Update: {
+          class_teacher_for?: string | null
+          contract_end_date?: string | null
           created_at?: string | null
+          department?: string | null
           employee_id?: string
+          employment_type?: string | null
+          experience_years?: number | null
           hire_date?: string
           id?: string
+          performance_rating?: number | null
+          previous_experience?: string | null
+          probation_period?: number | null
           profile_id?: string | null
           qualification?: string | null
           salary?: number | null
           specialization?: string | null
+          subjects_taught?: string[] | null
+          training_certifications?: string[] | null
           updated_at?: string | null
         }
         Relationships: [

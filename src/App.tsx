@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useAutoCredentials } from '@/hooks/useAutoCredentials';
 import LoginForm from '@/components/auth/LoginForm';
 import DashboardRouter from '@/components/dashboard/DashboardRouter';
 import SchoolConfig from '@/pages/SchoolConfig';
@@ -14,7 +15,10 @@ import AddStaff from '@/pages/admin/AddStaff';
 const queryClient = new QueryClient();
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
+
+  // Enable auto-credentials generation
+  useAutoCredentials(profile?.school_id || '');
 
   if (loading) {
     return (
