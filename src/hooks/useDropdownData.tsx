@@ -131,7 +131,7 @@ export const useStaff = () => {
         .from('staff')
         .select(`
           *,
-          profiles:profile_id(first_name, last_name)
+          profile:profile_id(first_name, last_name)
         `)
         .order('created_at');
       
