@@ -79,7 +79,7 @@ const AddTeacher = () => {
     try {
       const profileId = uuidv4();
       
-      // Create profile
+      // Create profile with proper type casting for gender
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -88,10 +88,10 @@ const AddTeacher = () => {
           last_name: formData.last_name,
           email: formData.email,
           phone: formData.phone,
-          role: 'teacher',
+          role: 'teacher' as const,
           school_id: profile.school_id,
           date_of_birth: formData.date_of_birth || null,
-          gender: formData.gender || null,
+          gender: (formData.gender as "male" | "female" | "other") || null,
           address: formData.address,
           emergency_contact_name: formData.emergency_contact_name,
           emergency_contact_phone: formData.emergency_contact_phone,

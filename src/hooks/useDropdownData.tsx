@@ -1,125 +1,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 
-export const useDepartments = () => {
-  const { user, profile } = useAuth();
-  
-  return useQuery({
-    queryKey: ['departments', profile?.school_id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('departments')
-        .select('*')
-        .eq('school_id', profile?.school_id)
-        .order('name');
-
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!user && !!profile?.school_id,
-  });
-};
-
-export const useSubjects = () => {
-  const { user, profile } = useAuth();
-  
-  return useQuery({
-    queryKey: ['subjects_offered', profile?.school_id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('subjects_offered')
-        .select('*')
-        .eq('school_id', profile?.school_id)
-        .order('name');
-
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!user && !!profile?.school_id,
-  });
-};
-
-export const useClasses = () => {
-  const { user, profile } = useAuth();
-  
-  return useQuery({
-    queryKey: ['classes', profile?.school_id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('classes')
-        .select('*')
-        .eq('school_id', profile?.school_id)
-        .order('grade_level', { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!user && !!profile?.school_id,
-  });
-};
-
-export const useTeachers = () => {
-  const { user, profile } = useAuth();
-  
-  return useQuery({
-    queryKey: ['teachers', profile?.school_id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('teachers')
-        .select(`
-          *,
-          profiles!inner (
-            id,
-            first_name,
-            last_name,
-            school_id
-          )
-        `)
-        .eq('profiles.school_id', profile?.school_id);
-
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!user && !!profile?.school_id,
-  });
-};
-
-export const useStaff = () => {
-  const { user, profile } = useAuth();
-  
-  return useQuery({
-    queryKey: ['staff', profile?.school_id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('staff')
-        .select(`
-          *,
-          profiles!inner (
-            id,
-            first_name,
-            last_name,
-            school_id
-          )
-        `)
-        .eq('profiles.school_id', profile?.school_id);
-
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!user && !!profile?.school_id,
-  });
-};
-
-// Constants for dropdown options
-export const EMPLOYMENT_TYPES = [
-  { value: 'full_time', label: 'Full Time' },
-  { value: 'part_time', label: 'Part Time' },
-  { value: 'contract', label: 'Contract' },
-  { value: 'temporary', label: 'Temporary' }
-];
-
+// Static dropdown data
 export const GENDER_OPTIONS = [
   { value: 'male', label: 'Male' },
   { value: 'female', label: 'Female' },
@@ -137,21 +20,39 @@ export const BLOOD_GROUPS = [
   { value: 'O-', label: 'O-' }
 ];
 
-export const TRANSPORT_MODES = [
-  { value: 'own', label: 'Own Transport' },
-  { value: 'school_bus', label: 'School Bus' },
-  { value: 'public', label: 'Public Transport' },
-  { value: 'walking', label: 'Walking' }
+export const RELIGIONS = [
+  { value: 'christianity', label: 'Christianity' },
+  { value: 'islam', label: 'Islam' },
+  { value: 'hinduism', label: 'Hinduism' },
+  { value: 'buddhism', label: 'Buddhism' },
+  { value: 'judaism', label: 'Judaism' },
+  { value: 'sikhism', label: 'Sikhism' },
+  { value: 'other', label: 'Other' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' }
 ];
 
-export const RELIGIONS = [
-  { value: 'hinduism', label: 'Hinduism' },
-  { value: 'islam', label: 'Islam' },
-  { value: 'christianity', label: 'Christianity' },
-  { value: 'sikhism', label: 'Sikhism' },
-  { value: 'buddhism', label: 'Buddhism' },
-  { value: 'jainism', label: 'Jainism' },
-  { value: 'other', label: 'Other' }
+export const EMPLOYMENT_TYPES = [
+  { value: 'full_time', label: 'Full Time' },
+  { value: 'part_time', label: 'Part Time' },
+  { value: 'contract', label: 'Contract' },
+  { value: 'temporary', label: 'Temporary' },
+  { value: 'intern', label: 'Intern' }
+];
+
+export const SHIFT_TIMINGS = [
+  { value: 'morning', label: 'Morning (6 AM - 2 PM)' },
+  { value: 'day', label: 'Day (9 AM - 5 PM)' },
+  { value: 'evening', label: 'Evening (2 PM - 10 PM)' },
+  { value: 'night', label: 'Night (10 PM - 6 AM)' },
+  { value: 'flexible', label: 'Flexible' }
+];
+
+export const TRANSPORT_MODES = [
+  { value: 'school_bus', label: 'School Bus' },
+  { value: 'private_transport', label: 'Private Transport' },
+  { value: 'public_transport', label: 'Public Transport' },
+  { value: 'walking', label: 'Walking' },
+  { value: 'cycling', label: 'Cycling' }
 ];
 
 export const GUARDIAN_RELATIONSHIPS = [
@@ -161,8 +62,8 @@ export const GUARDIAN_RELATIONSHIPS = [
   { value: 'grandmother', label: 'Grandmother' },
   { value: 'uncle', label: 'Uncle' },
   { value: 'aunt', label: 'Aunt' },
-  { value: 'brother', label: 'Brother' },
-  { value: 'sister', label: 'Sister' },
+  { value: 'sibling', label: 'Sibling' },
+  { value: 'legal_guardian', label: 'Legal Guardian' },
   { value: 'other', label: 'Other' }
 ];
 
@@ -170,13 +71,72 @@ export const FEE_CATEGORIES = [
   { value: 'regular', label: 'Regular' },
   { value: 'scholarship', label: 'Scholarship' },
   { value: 'sports_quota', label: 'Sports Quota' },
-  { value: 'merit_scholarship', label: 'Merit Scholarship' },
-  { value: 'economically_weaker', label: 'Economically Weaker Section' }
+  { value: 'academic_excellence', label: 'Academic Excellence' },
+  { value: 'staff_ward', label: 'Staff Ward' },
+  { value: 'sibling_discount', label: 'Sibling Discount' },
+  { value: 'other', label: 'Other' }
 ];
 
-export const SHIFT_TIMINGS = [
-  { value: 'morning', label: 'Morning (6 AM - 2 PM)' },
-  { value: 'afternoon', label: 'Afternoon (2 PM - 10 PM)' },
-  { value: 'night', label: 'Night (10 PM - 6 AM)' },
-  { value: 'flexible', label: 'Flexible Hours' }
-];
+// Database-driven dropdown hooks
+export const useDepartments = () => {
+  return useQuery({
+    queryKey: ['departments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('departments')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+};
+
+export const useSubjects = () => {
+  return useQuery({
+    queryKey: ['subjects_offered'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('subjects_offered')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+};
+
+export const useClasses = () => {
+  return useQuery({
+    queryKey: ['classes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('classes')
+        .select('*')
+        .order('grade_level, name');
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+};
+
+export const useStaff = () => {
+  return useQuery({
+    queryKey: ['staff_with_profiles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('staff')
+        .select(`
+          *,
+          profiles:profile_id(first_name, last_name)
+        `)
+        .order('created_at');
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+};
