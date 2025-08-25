@@ -351,7 +351,7 @@ const AddStaff = () => {
                   <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
                     {staff.map((staffMember) => (
                       <SelectItem key={staffMember.profile_id} value={staffMember.profile_id}>
-                        {staffMember.profile?.first_name} {staffMember.profile?.last_name}
+                        {staffMember.profiles?.first_name} {staffMember.profiles?.last_name}
                       </SelectItem>
                     ))}
                   </SelectContent>

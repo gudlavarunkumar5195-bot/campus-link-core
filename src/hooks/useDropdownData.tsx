@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -131,7 +130,7 @@ export const useStaff = () => {
         .from('staff')
         .select(`
           *,
-          profile:profile_id(first_name, last_name)
+          profiles!staff_profile_id_fkey(first_name, last_name)
         `)
         .order('created_at');
       
