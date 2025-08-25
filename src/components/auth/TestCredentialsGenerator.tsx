@@ -39,10 +39,10 @@ const TestCredentialsGenerator: React.FC = () => {
         const { data: newSchool, error: schoolError } = await supabase
           .from('schools')
           .insert({
-            name: 'Test School',
-            address: '123 Test Street',
+            name: 'Demo School',
+            address: '123 Demo Street, Demo City',
             phone: '+1234567890',
-            email: 'test@school.edu'
+            email: 'admin@demoschool.edu'
           })
           .select()
           .single();
@@ -51,28 +51,34 @@ const TestCredentialsGenerator: React.FC = () => {
         schoolId = newSchool.id;
       }
 
-      // Test users to create
+      // Test users to create with fixed credentials for demo
       const testUsers = [
         {
           first_name: 'Admin',
-          last_name: 'User',
-          email: 'admin@test.com',
+          last_name: 'Demo',
+          email: 'admin@demo.com',
           role: 'admin' as const,
-          employee_id: 'ADM001'
+          employee_id: 'ADM001',
+          username: 'admin.demo',
+          password: 'School2024'
         },
         {
-          first_name: 'John',
-          last_name: 'Teacher',
-          email: 'teacher@test.com',
+          first_name: 'Teacher',
+          last_name: 'Demo',
+          email: 'teacher@demo.com',
           role: 'teacher' as const,
-          employee_id: 'TCH001'
+          employee_id: 'TCH001',
+          username: 'teacher.demo',
+          password: 'School2024'
         },
         {
-          first_name: 'Jane',
-          last_name: 'Student',
-          email: 'student@test.com',
+          first_name: 'Student',
+          last_name: 'Demo',
+          email: 'student@demo.com',
           role: 'student' as const,
-          student_id: 'STD001'
+          student_id: 'STD001',
+          username: 'student.demo',
+          password: 'School2024'
         }
       ];
 
@@ -87,17 +93,20 @@ const TestCredentialsGenerator: React.FC = () => {
           .single();
 
         if (existingProfile) {
-          console.log(`User ${user.email} already exists, skipping...`);
+          console.log(`User ${user.email} already exists, adding to credentials list...`);
+          createdCredentials.push({
+            username: user.username,
+            password: user.password,
+            role: user.role,
+            name: `${user.first_name} ${user.last_name}`
+          });
           continue;
         }
-
-        // Generate default password
-        const defaultPassword = 'School' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
 
         // Create auth user first
         const { data: authUser, error: authError } = await supabase.auth.signUp({
           email: user.email,
-          password: defaultPassword,
+          password: user.password,
           options: {
             data: {
               first_name: user.first_name,
@@ -147,9 +156,9 @@ const TestCredentialsGenerator: React.FC = () => {
               profile_id: authUser.user.id,
               student_id: user.student_id || 'STD001',
               admission_date: new Date().toISOString().split('T')[0],
-              parent_name: 'Test Parent',
+              parent_name: 'Demo Parent',
               parent_phone: '+1234567890',
-              parent_email: 'parent@test.com'
+              parent_email: 'parent@demo.com'
             });
         } else if (user.role === 'teacher') {
           await supabase
@@ -158,8 +167,8 @@ const TestCredentialsGenerator: React.FC = () => {
               profile_id: authUser.user.id,
               employee_id: user.employee_id || 'TCH001',
               hire_date: new Date().toISOString().split('T')[0],
-              qualification: 'Test Qualification',
-              specialization: 'Test Subject'
+              qualification: 'Master of Education',
+              specialization: 'Mathematics'
             });
         } else if (user.role === 'admin') {
           await supabase
@@ -168,30 +177,17 @@ const TestCredentialsGenerator: React.FC = () => {
               profile_id: authUser.user.id,
               employee_id: user.employee_id || 'ADM001',
               hire_date: new Date().toISOString().split('T')[0],
-              position: 'Administrator'
+              position: 'School Administrator'
             });
         }
 
-        // Generate username using the RPC function
-        const { data: username, error: usernameError } = await supabase.rpc('generate_username', {
-          first_name: user.first_name,
-          last_name: user.last_name,
-          role: user.role,
-          school_id: schoolId
-        });
-
-        if (usernameError) {
-          console.error('Username generation error:', usernameError);
-          continue;
-        }
-
-        // Create user credentials
+        // Create user credentials with fixed usernames
         const { error: credentialsError } = await supabase
           .from('user_credentials')
           .insert({
             profile_id: authUser.user.id,
-            username: username,
-            default_password: defaultPassword,
+            username: user.username,
+            default_password: user.password,
             is_active: true
           });
 
@@ -201,8 +197,8 @@ const TestCredentialsGenerator: React.FC = () => {
         }
 
         createdCredentials.push({
-          username: username,
-          password: defaultPassword,
+          username: user.username,
+          password: user.password,
           role: user.role,
           name: `${user.first_name} ${user.last_name}`
         });
@@ -212,7 +208,7 @@ const TestCredentialsGenerator: React.FC = () => {
       
       toast({
         title: "Success",
-        description: `Generated ${createdCredentials.length} test users with credentials!`,
+        description: `Generated ${createdCredentials.length} demo users with credentials!`,
       });
 
     } catch (error: any) {
@@ -248,10 +244,10 @@ const TestCredentialsGenerator: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <UserPlus className="h-5 w-5" />
-          <span>Test Credentials Generator</span>
+          <span>Demo Credentials Generator</span>
         </CardTitle>
         <p className="text-sm text-gray-600">
-          Generate test users with proper login credentials for testing the authentication system.
+          Generate demo users with easy-to-remember login credentials for testing.
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -260,13 +256,13 @@ const TestCredentialsGenerator: React.FC = () => {
           disabled={generating}
           className="w-full bg-green-600 hover:bg-green-700"
         >
-          {generating ? 'Generating...' : 'Generate Test Users & Credentials'}
+          {generating ? 'Generating...' : 'Generate Demo Users & Credentials'}
         </Button>
 
         {testCredentials.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Generated Test Credentials</h3>
+              <h3 className="text-lg font-semibold">Demo Login Credentials</h3>
               <div className="flex space-x-2">
                 <Button
                   variant="outline"
@@ -333,13 +329,29 @@ const TestCredentialsGenerator: React.FC = () => {
             </div>
 
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">How to Test:</h4>
-              <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                <li>Go to the login page</li>
-                <li>Select "Username Login" tab</li>
-                <li>Enter any username and password from above</li>
-                <li>Click "Sign in with Username"</li>
-              </ol>
+              <h4 className="font-medium text-blue-900 mb-2">Quick Demo Login:</h4>
+              <div className="text-sm text-blue-800 space-y-2">
+                <div className="grid grid-cols-3 gap-4 font-mono text-xs">
+                  <div className="bg-white p-2 rounded border">
+                    <div className="font-semibold text-red-600">Admin</div>
+                    <div>admin.demo</div>
+                    <div>School2024</div>
+                  </div>
+                  <div className="bg-white p-2 rounded border">
+                    <div className="font-semibold text-green-600">Teacher</div>
+                    <div>teacher.demo</div>
+                    <div>School2024</div>
+                  </div>
+                  <div className="bg-white p-2 rounded border">
+                    <div className="font-semibold text-blue-600">Student</div>
+                    <div>student.demo</div>
+                    <div>School2024</div>
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <strong>How to login:</strong> Use "Username Login" tab → Enter username and password → Click "Sign in with Username"
+                </div>
+              </div>
             </div>
           </div>
         )}
