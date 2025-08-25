@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { UserPlus, Copy, Eye, EyeOff } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 
 interface TestCredential {
   username: string;
@@ -92,13 +91,38 @@ const TestCredentialsGenerator: React.FC = () => {
           continue;
         }
 
-        const profileId = uuidv4();
-        
-        // Create profile
-        const { error: profileError } = await supabase
+        // Generate default password
+        const defaultPassword = 'School' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+
+        // Create auth user first
+        const { data: authUser, error: authError } = await supabase.auth.signUp({
+          email: user.email,
+          password: defaultPassword,
+          options: {
+            data: {
+              first_name: user.first_name,
+              last_name: user.last_name,
+              role: user.role,
+              school_id: schoolId
+            }
+          }
+        });
+
+        if (authError) {
+          console.error('Auth user creation error:', authError);
+          continue;
+        }
+
+        if (!authUser.user) {
+          console.error('No user returned from auth signup');
+          continue;
+        }
+
+        // Create profile with the auth user's ID
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .insert({
-            id: profileId,
+            id: authUser.user.id,
             first_name: user.first_name,
             last_name: user.last_name,
             email: user.email,
@@ -106,7 +130,9 @@ const TestCredentialsGenerator: React.FC = () => {
             school_id: schoolId,
             employee_id: user.role !== 'student' ? user.employee_id : undefined,
             is_active: true
-          });
+          })
+          .select()
+          .single();
 
         if (profileError) {
           console.error('Profile creation error:', profileError);
@@ -118,7 +144,7 @@ const TestCredentialsGenerator: React.FC = () => {
           await supabase
             .from('students')
             .insert({
-              profile_id: profileId,
+              profile_id: authUser.user.id,
               student_id: user.student_id || 'STD001',
               admission_date: new Date().toISOString().split('T')[0],
               parent_name: 'Test Parent',
@@ -129,7 +155,7 @@ const TestCredentialsGenerator: React.FC = () => {
           await supabase
             .from('teachers')
             .insert({
-              profile_id: profileId,
+              profile_id: authUser.user.id,
               employee_id: user.employee_id || 'TCH001',
               hire_date: new Date().toISOString().split('T')[0],
               qualification: 'Test Qualification',
@@ -139,7 +165,7 @@ const TestCredentialsGenerator: React.FC = () => {
           await supabase
             .from('staff')
             .insert({
-              profile_id: profileId,
+              profile_id: authUser.user.id,
               employee_id: user.employee_id || 'ADM001',
               hire_date: new Date().toISOString().split('T')[0],
               position: 'Administrator'
@@ -159,14 +185,11 @@ const TestCredentialsGenerator: React.FC = () => {
           continue;
         }
 
-        // Generate default password
-        const defaultPassword = 'School' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-
         // Create user credentials
         const { error: credentialsError } = await supabase
           .from('user_credentials')
           .insert({
-            profile_id: profileId,
+            profile_id: authUser.user.id,
             username: username,
             default_password: defaultPassword,
             is_active: true
