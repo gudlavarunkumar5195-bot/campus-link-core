@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
+import TestCredentialsDialog from './TestCredentialsDialog';
 
 const LoginSystem = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -229,6 +230,12 @@ const LoginSystem = () => {
           <div className="mt-4 text-center text-sm text-gray-600">
             <p>Use your username and default password provided by admin</p>
             <p>or sign in with your registered email</p>
+          </div>
+
+          {/* Test Credentials Generator */}
+          <div className="mt-6 pt-4 border-t border-gray-200 text-center">
+            <p className="text-xs text-gray-500 mb-2">For Testing Purposes:</p>
+            <TestCredentialsDialog />
           </div>
         </CardContent>
       </Card>
