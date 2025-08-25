@@ -11,6 +11,15 @@ import SchoolConfig from '@/pages/SchoolConfig';
 import AddStudent from '@/pages/admin/AddStudent';
 import AddTeacher from '@/pages/admin/AddTeacher';
 import AddStaff from '@/pages/admin/AddStaff';
+import Classes from '@/pages/Classes';
+import Students from '@/pages/Students';
+import Timetable from '@/pages/Timetable';
+import Attendance from '@/pages/Attendance';
+import Grades from '@/pages/Grades';
+import Assignments from '@/pages/Assignments';
+import Documents from '@/pages/Documents';
+import Schedule from '@/pages/Schedule';
+import Profile from '@/pages/Profile';
 
 const queryClient = new QueryClient();
 
@@ -40,6 +49,15 @@ function AppContent() {
         <Route path="/admin/add-student" element={<AddStudent />} />
         <Route path="/admin/add-teacher" element={<AddTeacher />} />
         <Route path="/admin/add-staff" element={<AddStaff />} />
+        <Route path="/classes" element={<Classes />} />
+        <Route path="/students" element={<Students />} />
+        <Route path="/timetable" element={<Timetable />} />
+        <Route path="/attendance" element={<Attendance />} />
+        <Route path="/grades" element={<Grades />} />
+        <Route path="/assignments" element={<Assignments />} />
+        <Route path="/documents" element={<Documents />} />
+        <Route path="/schedule" element={<Schedule />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
