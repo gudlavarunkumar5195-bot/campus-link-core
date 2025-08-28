@@ -30,7 +30,9 @@ const LoginSystem = () => {
     setLoading(true);
 
     try {
-      // First, get the profile and default password from user_credentials
+      console.log('Attempting login with username:', credentialsLogin.username);
+      
+      // First, get the profile and credentials from user_credentials
       const { data: credentials, error: credError } = await supabase
         .from('user_credentials')
         .select(`
@@ -45,25 +47,33 @@ const LoginSystem = () => {
           )
         `)
         .eq('username', credentialsLogin.username)
+        .eq('is_active', true)
         .single();
+
+      console.log('Credentials lookup result:', credentials, credError);
 
       if (credError || !credentials) {
         throw new Error('Invalid username or password');
       }
 
-      // Check if password matches (simple check for now)
+      // Check if password matches
       if (credentials.default_password !== credentialsLogin.password) {
         throw new Error('Invalid username or password');
       }
 
-      // Sign in with Supabase Auth using email
-      const { data, error } = await supabase.auth.signInWithPassword({
+      console.log('Password matches, attempting Supabase auth...');
+
+      // Try to sign in with Supabase Auth using the profile's email
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: credentials.profiles.email,
         password: credentialsLogin.password
       });
 
-      if (error) {
-        // If auth fails, try to sign up the user first (for existing profiles)
+      console.log('Auth result:', authData, authError);
+
+      if (authError) {
+        // If auth user doesn't exist, create it
+        console.log('Auth user not found, creating...');
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: credentials.profiles.email,
           password: credentialsLogin.password,
@@ -73,12 +83,35 @@ const LoginSystem = () => {
               last_name: credentials.profiles.last_name,
               role: credentials.profiles.role,
               school_id: credentials.profiles.school_id
-            }
+            },
+            emailRedirectTo: window.location.origin
           }
         });
 
-        if (signUpError) throw signUpError;
+        console.log('SignUp result:', signUpData, signUpError);
+
+        if (signUpError) {
+          throw new Error(`Failed to create auth user: ${signUpError.message}`);
+        }
+
+        // If signup successful but user needs email confirmation, try signing in again
+        if (signUpData.user && !signUpData.session) {
+          const { data: retryAuth, error: retryError } = await supabase.auth.signInWithPassword({
+            email: credentials.profiles.email,
+            password: credentialsLogin.password
+          });
+
+          if (retryError) {
+            throw new Error('Account created but login failed. Please check your email for confirmation.');
+          }
+        }
       }
+
+      // Update last login time
+      await supabase
+        .from('user_credentials')
+        .update({ last_login: new Date().toISOString() })
+        .eq('id', credentials.id);
 
       toast({
         title: "Login successful",
@@ -86,6 +119,7 @@ const LoginSystem = () => {
       });
 
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: "Login failed",
         description: error.message,
