@@ -86,41 +86,30 @@ const TestCredentialsGenerator: React.FC = () => {
 
       for (const user of testUsers) {
         try {
-          console.log(`Processing user: ${user.email}`);
+          console.log(`Creating demo user: ${user.email}`);
           
-          // Check if credentials already exist
-          const { data: existingCredentials } = await supabase
-            .from('user_credentials')
-            .select('id, username')
-            .eq('username', user.username)
-            .single();
-
-          if (existingCredentials) {
-            console.log(`Credentials already exist for ${user.username}`);
-            createdCredentials.push({
-              username: user.username,
-              password: user.password,
-              role: user.role,
-              name: `${user.first_name} ${user.last_name}`
+          // Use the database function to create demo users
+          const { data: userId, error: createError } = await supabase
+            .rpc('create_demo_user', {
+              p_email: user.email,
+              p_password: user.password,
+              p_first_name: user.first_name,
+              p_last_name: user.last_name,
+              p_role: user.role,
+              p_username: user.username,
+              p_school_id: schoolId
             });
-            continue;
+
+          if (createError) {
+            console.error(`Error creating demo user ${user.email}:`, createError);
+            throw createError;
           }
 
-          // Check if auth user exists
-          let authUserId = null;
-          const { data: existingProfile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('email', user.email)
-            .single();
+          console.log(`Successfully created demo user ${user.username} with ID: ${userId}`);
 
-          if (existingProfile) {
-            authUserId = existingProfile.id;
-            console.log(`Profile exists for ${user.email}:`, authUserId);
-          } else {
-            // Create auth user
-            console.log(`Creating auth user for ${user.email}`);
-            const { data: authUser, error: authError } = await supabase.auth.signUp({
+          // Now try to create the auth user
+          try {
+            const { error: signUpError } = await supabase.auth.signUp({
               email: user.email,
               password: user.password,
               options: {
@@ -134,88 +123,14 @@ const TestCredentialsGenerator: React.FC = () => {
               }
             });
 
-            if (authError && !authError.message.includes('already registered')) {
-              console.error('Auth error:', authError);
-              throw authError;
+            if (signUpError && !signUpError.message.includes('already registered')) {
+              console.warn(`Auth signup warning for ${user.email}:`, signUpError);
+            } else {
+              console.log(`Auth user created for ${user.email}`);
             }
-
-            if (authUser.user) {
-              authUserId = authUser.user.id;
-              console.log(`Auth user created:`, authUserId);
-            }
+          } catch (authError) {
+            console.warn(`Auth error for ${user.email} (non-blocking):`, authError);
           }
-
-          if (!authUserId) {
-            console.error('No auth user ID available');
-            continue;
-          }
-
-          // Ensure profile exists
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: authUserId,
-              first_name: user.first_name,
-              last_name: user.last_name,
-              email: user.email,
-              role: user.role,
-              school_id: schoolId,
-              is_active: true
-            });
-
-          if (profileError) {
-            console.error('Profile error:', profileError);
-          }
-
-          // Create role-specific records
-          if (user.role === 'student') {
-            await supabase
-              .from('students')
-              .upsert({
-                profile_id: authUserId,
-                student_id: 'STD001',
-                admission_date: new Date().toISOString().split('T')[0],
-                parent_name: 'Demo Parent',
-                parent_phone: '+1234567890',
-                parent_email: 'parent@demo.com'
-              });
-          } else if (user.role === 'teacher') {
-            await supabase
-              .from('teachers')
-              .upsert({
-                profile_id: authUserId,
-                employee_id: 'TCH001',
-                hire_date: new Date().toISOString().split('T')[0],
-                qualification: 'Master of Education',
-                specialization: 'Mathematics'
-              });
-          } else if (user.role === 'admin') {
-            await supabase
-              .from('staff')
-              .upsert({
-                profile_id: authUserId,
-                employee_id: 'ADM001',
-                hire_date: new Date().toISOString().split('T')[0],
-                position: 'School Administrator'
-              });
-          }
-
-          // Create user credentials
-          const { error: credentialsError } = await supabase
-            .from('user_credentials')
-            .upsert({
-              profile_id: authUserId,
-              username: user.username,
-              default_password: user.password,
-              is_active: true
-            });
-
-          if (credentialsError) {
-            console.error('Credentials error:', credentialsError);
-            throw credentialsError;
-          }
-
-          console.log(`Successfully created credentials for ${user.username}`);
 
           createdCredentials.push({
             username: user.username,

@@ -57,7 +57,7 @@ const LoginSystem = () => {
         throw new Error('Database error occurred');
       }
 
-      if (!credentials) {
+      if (!credentials || !credentials.profiles) {
         throw new Error('Invalid username or password');
       }
 
@@ -77,8 +77,9 @@ const LoginSystem = () => {
       console.log('Auth result:', authData, authError);
 
       if (authError) {
-        // If auth fails, try to create the auth user
         console.log('Auth user not found, creating...');
+        
+        // Try to create the auth user first
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: credentials.profiles.email,
           password: credentialsLogin.password,
@@ -96,10 +97,13 @@ const LoginSystem = () => {
         console.log('SignUp result:', signUpData, signUpError);
 
         if (signUpError && !signUpError.message.includes('already registered')) {
+          console.error('SignUp error:', signUpError);
           throw new Error(`Failed to create auth user: ${signUpError.message}`);
         }
 
-        // Try signing in again after signup
+        // Wait a moment then try signing in again
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         const { data: retryAuth, error: retryError } = await supabase.auth.signInWithPassword({
           email: credentials.profiles.email,
           password: credentialsLogin.password
@@ -107,7 +111,7 @@ const LoginSystem = () => {
 
         if (retryError) {
           console.error('Retry auth error:', retryError);
-          throw new Error('Login failed after account creation. Please try again.');
+          throw new Error('Login failed after account creation. Please try again in a moment.');
         }
 
         console.log('Login successful after creation');

@@ -1296,6 +1296,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_demo_user: {
+        Args: {
+          p_email: string
+          p_first_name: string
+          p_last_name: string
+          p_password: string
+          p_role: Database["public"]["Enums"]["user_role"]
+          p_school_id: string
+          p_username: string
+        }
+        Returns: string
+      }
       generate_default_password: {
         Args: Record<PropertyKey, never>
         Returns: string
