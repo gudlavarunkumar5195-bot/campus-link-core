@@ -22,22 +22,29 @@ const TestCredentialsGenerator: React.FC = () => {
 
   const generateTestUsers = async () => {
     setGenerating(true);
+    setTestCredentials([]);
     
     try {
-      console.log('Starting demo user generation...');
+      console.log('🚀 Starting demo user generation...');
       
       // Get or create a demo school
+      console.log('📝 Looking for existing schools...');
       let { data: schools, error: schoolsError } = await supabase
         .from('schools')
         .select('id, name')
         .limit(1);
 
-      if (schoolsError) throw schoolsError;
+      console.log('Schools query result:', { schools, error: schoolsError });
+
+      if (schoolsError) {
+        console.error('❌ School query error:', schoolsError);
+        throw schoolsError;
+      }
 
       let schoolId = schools?.[0]?.id;
       
       if (!schoolId) {
-        console.log('Creating demo school...');
+        console.log('🏫 Creating demo school...');
         const { data: newSchool, error: schoolError } = await supabase
           .from('schools')
           .insert({
@@ -49,9 +56,16 @@ const TestCredentialsGenerator: React.FC = () => {
           .select()
           .single();
 
-        if (schoolError) throw schoolError;
+        console.log('School creation result:', { newSchool, error: schoolError });
+        
+        if (schoolError) {
+          console.error('❌ School creation error:', schoolError);
+          throw schoolError;
+        }
         schoolId = newSchool.id;
-        console.log('Demo school created:', schoolId);
+        console.log('✅ Demo school created:', schoolId);
+      } else {
+        console.log('✅ Using existing school:', schoolId);
       }
 
       // Test users to create
@@ -86,64 +100,66 @@ const TestCredentialsGenerator: React.FC = () => {
 
       for (const user of testUsers) {
         try {
-          console.log(`Creating demo user: ${user.email}`);
+          console.log(`👤 Creating demo user: ${user.email}`);
           
-          // First, try to create profiles and credentials directly
-          const userId = crypto.randomUUID();
-          
-          // Insert or update profile
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: userId,
-              first_name: user.first_name,
-              last_name: user.last_name,
-              email: user.email,
-              role: user.role,
-              school_id: schoolId,
-              is_active: true
-            }, {
-              onConflict: 'email'
-            });
-
-          if (profileError) {
-            console.error(`Profile creation error for ${user.email}:`, profileError);
-            // Try to get existing profile by email
-            const { data: existingProfile } = await supabase
-              .from('profiles')
-              .select('id')
-              .eq('email', user.email)
-              .single();
-            
-            if (existingProfile) {
-              console.log(`Using existing profile for ${user.email}`);
-              // Update existing profile
-              await supabase
-                .from('profiles')
-                .update({
-                  first_name: user.first_name,
-                  last_name: user.last_name,
-                  role: user.role,
-                  school_id: schoolId
-                })
-                .eq('id', existingProfile.id);
-            }
-          }
-
-          // Get the profile ID
-          const { data: profile } = await supabase
+          // Check if user already exists
+          const { data: existingProfile, error: existingError } = await supabase
             .from('profiles')
             .select('id')
             .eq('email', user.email)
-            .single();
+            .maybeSingle();
 
-          if (!profile) {
-            throw new Error(`Failed to create or find profile for ${user.email}`);
+          console.log(`Profile lookup for ${user.email}:`, { existingProfile, existingError });
+
+          let profileId;
+
+          if (existingProfile) {
+            console.log(`♻️ Using existing profile for ${user.email}:`, existingProfile.id);
+            profileId = existingProfile.id;
+            
+            // Update the existing profile
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({
+                first_name: user.first_name,
+                last_name: user.last_name,
+                role: user.role,
+                school_id: schoolId,
+                is_active: true
+              })
+              .eq('id', profileId);
+
+            if (updateError) {
+              console.error(`❌ Profile update error for ${user.email}:`, updateError);
+              throw updateError;
+            }
+            console.log(`✅ Updated profile for ${user.email}`);
+          } else {
+            // Create new profile
+            profileId = crypto.randomUUID();
+            console.log(`🆕 Creating new profile with ID: ${profileId}`);
+            
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .insert({
+                id: profileId,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                email: user.email,
+                role: user.role,
+                school_id: schoolId,
+                is_active: true
+              });
+
+            if (profileError) {
+              console.error(`❌ Profile creation error for ${user.email}:`, profileError);
+              throw profileError;
+            }
+            console.log(`✅ Created profile for ${user.email}`);
           }
 
-          const profileId = profile.id;
-
           // Create or update credentials
+          console.log(`🔑 Creating credentials for ${user.email}...`);
           const { error: credError } = await supabase
             .from('user_credentials')
             .upsert({
@@ -156,17 +172,28 @@ const TestCredentialsGenerator: React.FC = () => {
             });
 
           if (credError) {
-            console.error(`Credentials error for ${user.email}:`, credError);
+            console.error(`❌ Credentials error for ${user.email}:`, credError);
             throw credError;
           }
+          console.log(`✅ Created credentials for ${user.email}`);
+
+          // Verify credentials were created
+          const { data: verifyCredentials } = await supabase
+            .from('user_credentials')
+            .select('username, default_password')
+            .eq('profile_id', profileId)
+            .single();
+          
+          console.log(`🔍 Verified credentials for ${user.email}:`, verifyCredentials);
 
           // Create role-specific records
+          console.log(`👔 Creating role-specific record for ${user.role}...`);
           if (user.role === 'student') {
-            await supabase
+            const { error: studentError } = await supabase
               .from('students')
               .upsert({
                 profile_id: profileId,
-                student_id: 'STD001',
+                student_id: `STD${Date.now().toString().slice(-3)}`,
                 admission_date: new Date().toISOString().split('T')[0],
                 parent_name: 'Demo Parent',
                 parent_phone: '+1234567890',
@@ -174,32 +201,50 @@ const TestCredentialsGenerator: React.FC = () => {
               }, {
                 onConflict: 'profile_id'
               });
+            
+            if (studentError) {
+              console.error(`❌ Student record error:`, studentError);
+            } else {
+              console.log(`✅ Created student record`);
+            }
           } else if (user.role === 'teacher') {
-            await supabase
+            const { error: teacherError } = await supabase
               .from('teachers')
               .upsert({
                 profile_id: profileId,
-                employee_id: 'TCH001',
+                employee_id: `TCH${Date.now().toString().slice(-3)}`,
                 hire_date: new Date().toISOString().split('T')[0],
                 qualification: 'Master of Education',
                 specialization: 'Mathematics'
               }, {
                 onConflict: 'profile_id'
               });
+              
+            if (teacherError) {
+              console.error(`❌ Teacher record error:`, teacherError);
+            } else {
+              console.log(`✅ Created teacher record`);
+            }
           } else if (user.role === 'admin') {
-            await supabase
+            const { error: staffError } = await supabase
               .from('staff')
               .upsert({
                 profile_id: profileId,
-                employee_id: 'ADM001',
+                employee_id: `ADM${Date.now().toString().slice(-3)}`,
                 hire_date: new Date().toISOString().split('T')[0],
                 position: 'School Administrator'
               }, {
                 onConflict: 'profile_id'
               });
+              
+            if (staffError) {
+              console.error(`❌ Staff record error:`, staffError);
+            } else {
+              console.log(`✅ Created staff record`);
+            }
           }
 
-          console.log(`Successfully created demo user ${user.username}`);
+          console.log(`🎉 Successfully created demo user ${user.username}`);
 
           createdCredentials.push({
             username: user.username,
@@ -209,20 +254,34 @@ const TestCredentialsGenerator: React.FC = () => {
           });
 
         } catch (userError: any) {
-          console.error(`Error processing user ${user.email}:`, userError);
+          console.error(`❌ Error processing user ${user.email}:`, userError);
+          toast({
+            title: "User Creation Error",
+            description: `Failed to create ${user.email}: ${userError.message}`,
+            variant: "destructive",
+          });
           continue;
         }
       }
 
+      console.log(`🎯 Final result: Created ${createdCredentials.length} users`);
       setTestCredentials(createdCredentials);
       
-      toast({
-        title: "Success",
-        description: `Generated ${createdCredentials.length} demo users with credentials!`,
-      });
+      if (createdCredentials.length > 0) {
+        toast({
+          title: "Success! 🎉",
+          description: `Generated ${createdCredentials.length} demo users with credentials!`,
+        });
+      } else {
+        toast({
+          title: "Warning",
+          description: "No demo users were created. Check console for errors.",
+          variant: "destructive",
+        });
+      }
 
     } catch (error: any) {
-      console.error('Error generating test users:', error);
+      console.error('❌ Critical error generating test users:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to generate test users",
