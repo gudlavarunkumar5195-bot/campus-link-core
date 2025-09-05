@@ -7,11 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import SignUpForm from './SignUpForm';
 
 const AuthForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,18 +21,36 @@ const AuthForm: React.FC = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) throw error;
       
+      // Log session data for debugging (check if tenant_id and role are in JWT)
+      console.log('Login successful - Session data:', {
+        user: data.user,
+        session: data.session,
+        userMetadata: data.user?.user_metadata
+      });
+      
+      // Verify tenant_id and role are in user metadata
+      if (data.user?.user_metadata?.tenant_id && data.user?.user_metadata?.role) {
+        console.log('✅ JWT contains tenant_id and role:', {
+          tenant_id: data.user.user_metadata.tenant_id,
+          role: data.user.user_metadata.role
+        });
+      } else {
+        console.warn('⚠️ JWT missing tenant_id or role in user_metadata');
+      }
+      
       toast({
         title: "Success",
         description: "Logged in successfully!",
       });
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: "Error",
         description: error.message,
@@ -40,6 +60,14 @@ const AuthForm: React.FC = () => {
       setLoading(false);
     }
   };
+
+  if (showSignUp) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <SignUpForm onBackToLogin={() => setShowSignUp(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">
@@ -76,10 +104,21 @@ const AuthForm: React.FC = () => {
                 className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
               />
             </div>
-            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Sign In
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => setShowSignUp(true)}
+                disabled={loading}
+              >
+                Create New Account
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
