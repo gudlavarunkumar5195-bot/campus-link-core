@@ -1,0 +1,46 @@
+{
+  "functions": {
+    "api/assignTenant.js": {
+      "maxDuration": 10
+    },
+    "api/billing/createCheckoutSession.js": {
+      "maxDuration": 10
+    },
+    "api/billing/webhook.js": {
+      "maxDuration": 15
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Authorization, Content-Type, x-client-info, apikey, x-assign-tenant-secret"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/assignTenant",
+      "destination": "/api/assignTenant.js"
+    },
+    {
+      "source": "/api/billing/createCheckoutSession",
+      "destination": "/api/billing/createCheckoutSession.js"
+    },
+    {
+      "source": "/api/billing/webhook",
+      "destination": "/api/billing/webhook.js"
+    }
+  ]
+}
