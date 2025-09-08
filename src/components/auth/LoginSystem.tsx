@@ -7,12 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
 import TestCredentialsDialog from './TestCredentialsDialog';
+import SignUpForm from './SignUpForm';
 
 const LoginSystem = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
   const { toast } = useToast();
 
   const [credentialsLogin, setCredentialsLogin] = useState({
@@ -168,13 +170,17 @@ const LoginSystem = () => {
     }
   };
 
+  if (showSignUp) {
+    return <SignUpForm onBackToLogin={() => setShowSignUp(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-white">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
             <LogIn className="h-6 w-6" />
-            School Management Login
+            School Management System
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -274,6 +280,18 @@ const LoginSystem = () => {
           <div className="mt-4 text-center text-sm text-gray-600">
             <p>Use your username and default password provided by admin</p>
             <p>or sign in with your registered email</p>
+          </div>
+
+          {/* Sign Up Option */}
+          <div className="mt-4 text-center">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowSignUp(true)}
+              className="w-full"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Create New Account
+            </Button>
           </div>
 
           {/* Test Credentials Generator */}
