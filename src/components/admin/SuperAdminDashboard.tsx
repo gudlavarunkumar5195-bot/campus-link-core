@@ -15,16 +15,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 interface Organization {
   id: string;
   name: string;
-  slug: string;
-  status: string;
   created_at: string;
-  subscriptions?: {
-    status: string;
-    plans: {
-      name: string;
-      slug: string;
-    };
-  }[];
+  address?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  // Mock fields for SaaS functionality
+  slug?: string;
+  status?: string;
 }
 
 interface User {
@@ -62,21 +60,21 @@ export default function SuperAdminDashboard() {
         .select(`
           id,
           name,
-          slug,
-          status,
           created_at,
-          subscriptions (
-            status,
-            plans (
-              name,
-              slug
-            )
-          )
+          address,
+          phone,
+          email,
+          website
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Organization[];
+      // Add mock SaaS fields
+      return data?.map(school => ({
+        ...school,
+        slug: school.name.toLowerCase().replace(/\s+/g, '-'),
+        status: 'active'
+      })) as Organization[];
     }
   });
 
@@ -318,12 +316,10 @@ export default function SuperAdminDashboard() {
                         <h3 className="font-semibold">{org.name}</h3>
                         <p className="text-sm text-muted-foreground">/{org.slug}</p>
                         <div className="flex items-center gap-2 mt-2">
-                          {getStatusBadge(org.status)}
-                          {org.subscriptions?.[0] && (
-                            <Badge variant="outline">
-                              {org.subscriptions[0].plans.name}
-                            </Badge>
-                          )}
+                          {getStatusBadge(org.status || 'active')}
+                          <Badge variant="outline">
+                            Free Plan
+                          </Badge>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
