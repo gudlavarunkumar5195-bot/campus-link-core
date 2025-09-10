@@ -18,7 +18,8 @@ import {
   ClipboardList,
   Cog,
   UserPlus,
-  TrendingUp
+  TrendingUp,
+  Crown
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -90,6 +91,8 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
       navigate('/schools');
     } else if (page === 'create-school') {
       navigate('/create-school');
+    } else if (page === 'super-admin') {
+      navigate('/super-admin');
     } else if (page === 'analytics') {
       navigate('/analytics');
     } else if (page === 'users' && isSuperAdmin) {
@@ -115,6 +118,7 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
     if (isSuperAdmin) {
       return [
         ...baseItems,
+        { key: 'super-admin', label: 'Super Admin', icon: Crown },
         { key: 'analytics', label: 'Analytics', icon: TrendingUp },
         { key: 'schools', label: 'Schools', icon: Building2 },
         { key: 'create-school', label: 'Create School', icon: Plus },
@@ -205,6 +209,7 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
             const isActive = currentPage === item.key || 
               (item.key === 'schools' && window.location.pathname === '/schools') ||
               (item.key === 'create-school' && window.location.pathname === '/create-school') ||
+              (item.key === 'super-admin' && window.location.pathname === '/super-admin') ||
               (item.key === 'analytics' && window.location.pathname === '/analytics') ||
               (item.key === 'users' && window.location.pathname === '/users') ||
               (item.key === 'settings' && window.location.pathname === '/settings') ||

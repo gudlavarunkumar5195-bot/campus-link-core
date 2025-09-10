@@ -20,6 +20,10 @@ import Assignments from '@/pages/Assignments';
 import Documents from '@/pages/Documents';
 import Schedule from '@/pages/Schedule';
 import Profile from '@/pages/Profile';
+import CreateSchool from '@/pages/CreateSchool';
+import SchoolsManagement from '@/pages/SchoolsManagement';
+import SuperAdminDashboard from '@/components/admin/SuperAdminDashboard';
+import AcceptInvitePage from '@/components/invite/AcceptInvitePage';
 
 const queryClient = new QueryClient();
 
@@ -58,6 +62,10 @@ function AppContent() {
         <Route path="/documents" element={<Documents />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/create-school" element={<CreateSchool />} />
+        <Route path="/schools" element={<SchoolsManagement />} />
+        <Route path="/super-admin" element={<SuperAdminDashboard />} />
+        <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
