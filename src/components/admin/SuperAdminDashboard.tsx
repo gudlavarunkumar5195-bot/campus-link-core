@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Building2, Users, Crown, Eye, Pause, Play } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import SuperAdminAnalytics from './SuperAdminAnalytics';
 
 interface Organization {
   id: string;
@@ -298,7 +299,8 @@ export default function SuperAdminDashboard() {
         </TabsList>
 
         <TabsContent value="organizations">
-          <Card>
+          <SuperAdminAnalytics />
+          <Card className="mt-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
