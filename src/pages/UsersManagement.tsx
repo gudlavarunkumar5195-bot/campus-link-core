@@ -44,26 +44,26 @@ const UsersManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen page-container">
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 text-white hover:bg-white/10"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Back to Dashboard</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Users Management</h1>
-              <p className="text-gray-600">Manage all users across schools</p>
+              <h1 className="text-3xl font-bold text-white">Users Management</h1>
+              <p className="text-white/80">Manage all users across schools</p>
             </div>
           </div>
         </div>
 
-        <Card>
+        <Card className="form-container border-white/50 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Users className="h-5 w-5" />

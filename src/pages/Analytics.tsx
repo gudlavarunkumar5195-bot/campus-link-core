@@ -83,28 +83,28 @@ const Analytics = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen page-container">
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 text-white hover:bg-white/10"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Back to Dashboard</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">System Analytics</h1>
-              <p className="text-gray-600">Overview of all schools in the system</p>
+              <h1 className="text-3xl font-bold text-white">System Analytics</h1>
+              <p className="text-white/80">Overview of all schools in the system</p>
             </div>
           </div>
         </div>
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="form-container border-white/50 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Schools</CardTitle>
               <Building2 className="h-4 w-4 text-blue-600" />
@@ -114,7 +114,7 @@ const Analytics = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="form-container border-white/50 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Students</CardTitle>
               <GraduationCap className="h-4 w-4 text-green-600" />
@@ -124,7 +124,7 @@ const Analytics = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="form-container border-white/50 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Teachers</CardTitle>
               <Users className="h-4 w-4 text-purple-600" />
@@ -134,7 +134,7 @@ const Analytics = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="form-container border-white/50 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Staff</CardTitle>
               <Users className="h-4 w-4 text-orange-600" />
@@ -146,7 +146,7 @@ const Analytics = () => {
         </div>
 
         {/* Chart */}
-        <Card className="mb-6">
+        <Card className="form-container border-white/50 shadow-lg mb-6">
           <CardHeader>
             <CardTitle>Students per School</CardTitle>
           </CardHeader>

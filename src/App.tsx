@@ -25,6 +25,12 @@ import SchoolsManagement from '@/pages/SchoolsManagement';
 import SuperAdminDashboard from '@/components/admin/SuperAdminDashboard';
 import AcceptInvitePage from '@/components/invite/AcceptInvitePage';
 import Announcements from '@/pages/Announcements';
+import Analytics from '@/pages/Analytics';
+import BulkUpload from '@/pages/BulkUpload';
+import Home from '@/pages/Home';
+import SystemSettings from '@/pages/SystemSettings';
+import UsersManagement from '@/pages/UsersManagement';
+import AcademicYear from '@/pages/AcademicYear';
 
 const queryClient = new QueryClient();
 
@@ -50,6 +56,11 @@ function AppContent() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<DashboardRouter />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/bulk-upload" element={<BulkUpload />} />
+        <Route path="/system-settings" element={<SystemSettings />} />
+        <Route path="/users-management" element={<UsersManagement />} />
         <Route path="/school-config" element={<SchoolConfig />} />
         <Route path="/admin/add-student" element={<AddStudent />} />
         <Route path="/admin/add-teacher" element={<AddTeacher />} />
@@ -67,6 +78,7 @@ function AppContent() {
         <Route path="/schools" element={<SchoolsManagement />} />
         <Route path="/super-admin" element={<SuperAdminDashboard />} />
         <Route path="/announcements" element={<Announcements />} />
+        <Route path="/academic-year" element={<AcademicYear />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

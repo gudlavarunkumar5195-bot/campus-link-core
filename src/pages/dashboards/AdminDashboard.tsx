@@ -73,8 +73,7 @@ const AdminDashboard = () => {
       title: 'Academic Year',
       description: 'Configure academic calendar',
       icon: <Calendar className="h-6 w-6" />,
-      path: '#',
-      onClick: () => navigate('/', { state: { page: 'academic-years' } }),
+      path: '/academic-year',
       color: 'bg-teal-50 hover:bg-teal-100 border-teal-200',
       iconColor: 'text-teal-600'
     },
@@ -82,8 +81,7 @@ const AdminDashboard = () => {
       title: 'Analytics',
       description: 'View school performance metrics',
       icon: <BarChart3 className="h-6 w-6" />,
-      path: '#',
-      onClick: () => navigate('/', { state: { page: 'analytics' } }),
+      path: '/analytics',
       color: 'bg-red-50 hover:bg-red-100 border-red-200',
       iconColor: 'text-red-600'
     }
@@ -109,7 +107,7 @@ const AdminDashboard = () => {
             <Card 
               key={index} 
               className={`${card.color} border-2 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer`}
-              onClick={() => card.onClick ? card.onClick() : navigate(card.path)}
+              onClick={() => navigate(card.path)}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center space-x-3">
