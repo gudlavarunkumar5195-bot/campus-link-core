@@ -1,14 +1,16 @@
 
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
-import TestCredentialsDialog from './TestCredentialsDialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Eye, EyeOff, LogIn, UserPlus, Crown } from 'lucide-react';
+import SuperAdminCredentialsManager from '../admin/SuperAdminCredentialsManager';
 import SignUpForm from './SignUpForm';
 
 const LoginSystem = () => {
@@ -16,7 +18,11 @@ const LoginSystem = () => {
   const [loading, setLoading] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
+  // Redirect if already logged in
+  if (user) {
+    return null; // Let the router handle the redirect
   const [credentialsLogin, setCredentialsLogin] = useState({
     username: '',
     password: ''
@@ -294,10 +300,23 @@ const LoginSystem = () => {
             </Button>
           </div>
 
-          {/* Test Credentials Generator */}
+          {/* Super Admin Credentials Manager */}
           <div className="mt-6 pt-4 border-t border-gray-200 text-center">
-            <p className="text-xs text-gray-500 mb-2">For Testing Purposes:</p>
-            <TestCredentialsDialog />
+            <p className="text-xs text-gray-500 mb-2">System Administration:</p>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs">
+                  <Crown className="h-3 w-3 mr-1" />
+                  Super Admin Access
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Super Admin Credentials</DialogTitle>
+                </DialogHeader>
+                <SuperAdminCredentialsManager />
+              </DialogContent>
+            </Dialog>
           </div>
         </CardContent>
       </Card>

@@ -374,25 +374,22 @@ export default function SuperAdminDashboard() {
                           <Eye className="h-4 w-4 mr-1" />
                           View
                         </Button>
-                        {org.status === 'active' ? (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleSuspendOrganization(org.id)}
-                          >
-                            <Pause className="h-4 w-4 mr-1" />
-                            Suspend
-                          </Button>
-                        ) : (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleActivateOrganization(org.id)}
-                          >
-                            <Play className="h-4 w-4 mr-1" />
-                            Activate
-                          </Button>
-                        )}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleSuspendOrganization(org.id)}
+                        >
+                          <Pause className="h-4 w-4 mr-1" />
+                          Suspend
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleActivateOrganization(org.id)}
+                        >
+                          <Play className="h-4 w-4 mr-1" />
+                          Activate
+                        </Button>
                       </div>
                     </div>
                   ))}
