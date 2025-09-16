@@ -36,11 +36,11 @@ serve(async (req) => {
     // Check if user is super admin
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('is_super_admin')
+      .select('role, school_id')
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile?.is_super_admin) {
+    if (profileError || !profile || profile.role !== 'admin' || profile.school_id !== null) {
       throw new Error('Super admin access required');
     }
 
@@ -66,17 +66,8 @@ serve(async (req) => {
       throw new Error('Organization slug already exists');
     }
 
-    // Get default plan
-    const { data: plan, error: planError } = await supabaseAdmin
-      .from('plans')
-      .select('id')
-      .eq('slug', planSlug)
-      .eq('is_active', true)
-      .single();
-
-    if (planError || !plan) {
-      throw new Error(`Plan '${planSlug}' not found`);
-    }
+    // Skip plan lookup since plans table doesn't exist yet
+    console.log(`Using plan: ${planSlug}`);
 
     // Create organization (using schools table)
     const { data: organization, error: orgError } = await supabaseAdmin
@@ -84,9 +75,7 @@ serve(async (req) => {
       .insert({
         name,
         slug,
-        status: 'active',
-        metadata: { created_by_admin: true },
-        created_at: new Date().toISOString()
+        status: 'active'
       })
       .select()
       .single();
@@ -99,12 +88,9 @@ serve(async (req) => {
     const { error: subscriptionError } = await supabaseAdmin
       .from('subscriptions')
       .insert({
-        organization_id: organization.id,
-        plan_id: plan.id,
-        status: 'active',
-        started_at: new Date().toISOString(),
-        manual_override: true,
-        override_reason: 'Created by super admin'
+        school_id: organization.id,
+        plan: planSlug,
+        status: 'active'
       });
 
     if (subscriptionError) {
@@ -114,59 +100,15 @@ serve(async (req) => {
 
     // If owner is specified, assign them to the organization
     if (ownerId) {
-      // Get owner role
-      const { data: ownerRole } = await supabaseAdmin
-        .from('roles')
-        .select('id')
-        .eq('name', 'owner')
-        .single();
-
-      if (ownerRole) {
-        // Create organization membership (if organization_members table exists)
-        try {
-          await supabaseAdmin
-            .from('organization_members')
-            .insert({
-              organization_id: organization.id,
-              user_id: ownerId,
-              role_id: ownerRole.id,
-              status: 'active',
-              joined_at: new Date().toISOString()
-            });
-        } catch (error) {
-          console.error('Failed to create organization membership:', error);
-        }
-
-        // Update user's profile to link to this organization
-        await supabaseAdmin
-          .from('profiles')
-          .update({ school_id: organization.id })
-          .eq('id', ownerId);
-      }
-    }
-
-    // Log audit event
-    try {
+      // Update user's profile to link to this organization
       await supabaseAdmin
-        .from('audit_logs')
-        .insert({
-          actor_user_id: user.id,
-          organization_id: organization.id,
-          action: 'organization.created',
-          target_type: 'organization',
-          target_id: organization.id,
-          details: {
-            name,
-            slug,
-            owner_id: ownerId,
-            plan_slug: planSlug
-          },
-          ip_address: req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for'),
-          user_agent: req.headers.get('user-agent')
-        });
-    } catch (error) {
-      console.error('Failed to log audit event:', error);
+        .from('profiles')
+        .update({ school_id: organization.id })
+        .eq('id', ownerId);
     }
+
+    // Log the creation
+    console.log(`Organization created: ${organization.name} (${organization.slug}) by admin ${user.id}`);
 
     return new Response(
       JSON.stringify({
