@@ -51,13 +51,7 @@ const TeacherTimetableView = () => {
     enabled: !!profile?.id
   });
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center py-12">Loading your timetable...</div>;
-  }
-
   const timetable: any[] = Array.isArray(timetableData) ? (timetableData as any[]) : [];
-
-
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   
   // Group timetable by day (with guards)
@@ -92,6 +86,10 @@ const TeacherTimetableView = () => {
       hour12: true 
     });
   };
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-12">Loading your timetable...</div>;
+  }
 
   return (
     <div className="space-y-6">
