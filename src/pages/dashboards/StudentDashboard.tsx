@@ -3,7 +3,7 @@ import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Calendar, FileText, ClipboardList, GraduationCap } from 'lucide-react';
+import { BookOpen, Calendar, FileText, ClipboardList, GraduationCap, Megaphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const StudentDashboard = () => {
@@ -115,6 +115,26 @@ const StudentDashboard = () => {
                 className="w-full bg-green-600 hover:bg-green-700"
               >
                 View Assignments
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-800 border-slate-700 hover:border-amber-500 transition-colors">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center space-x-2 text-amber-600">
+                <Megaphone className="h-5 w-5" />
+                <span>Announcements</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-400 text-sm mb-4">
+                School announcements, classwork & homework
+              </p>
+              <Button 
+                onClick={() => navigate('/announcements')}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                View Updates
               </Button>
             </CardContent>
           </Card>

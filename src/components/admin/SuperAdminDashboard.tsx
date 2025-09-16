@@ -129,6 +129,45 @@ export default function SuperAdminDashboard() {
   });
 
   // Invite user mutation
+  // Handler functions for organization and user actions
+  const handleViewOrganization = (orgId: string) => {
+    toast({ description: `Viewing organization: ${orgId}` });
+  };
+
+  const handleSuspendOrganization = async (orgId: string) => {
+    try {
+      const { error } = await supabase.rpc('toggle_school_status', {
+        school_id: orgId,
+        new_status: 'suspended'
+      });
+      if (error) throw error;
+      
+      toast({ description: 'Organization suspended successfully' });
+      queryClient.invalidateQueries({ queryKey: ['admin-organizations'] });
+    } catch (error: any) {
+      toast({ variant: 'destructive', description: error.message });
+    }
+  };
+
+  const handleActivateOrganization = async (orgId: string) => {
+    try {
+      const { error } = await supabase.rpc('toggle_school_status', {
+        school_id: orgId,
+        new_status: 'active'
+      });
+      if (error) throw error;
+      
+      toast({ description: 'Organization activated successfully' });
+      queryClient.invalidateQueries({ queryKey: ['admin-organizations'] });
+    } catch (error: any) {
+      toast({ variant: 'destructive', description: error.message });
+    }
+  };
+
+  const handleViewUser = (userId: string) => {
+    toast({ description: `Viewing user: ${userId}` });
+  };
+
   const inviteUserMutation = useMutation({
     mutationFn: async (data: { email: string; roleSlug: string; organizationId: string }) => {
       const { data: result, error } = await supabase.functions.invoke('invite-user', {
@@ -325,17 +364,29 @@ export default function SuperAdminDashboard() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewOrganization(org.id)}
+                        >
                           <Eye className="h-4 w-4 mr-1" />
                           View
                         </Button>
                         {org.status === 'active' ? (
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleSuspendOrganization(org.id)}
+                          >
                             <Pause className="h-4 w-4 mr-1" />
                             Suspend
                           </Button>
                         ) : (
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleActivateOrganization(org.id)}
+                          >
                             <Play className="h-4 w-4 mr-1" />
                             Activate
                           </Button>
@@ -382,7 +433,11 @@ export default function SuperAdminDashboard() {
                         )}
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewUser(user.id)}
+                        >
                           <Eye className="h-4 w-4 mr-1" />
                           View
                         </Button>

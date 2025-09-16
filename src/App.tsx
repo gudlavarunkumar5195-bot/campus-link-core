@@ -24,6 +24,7 @@ import CreateSchool from '@/pages/CreateSchool';
 import SchoolsManagement from '@/pages/SchoolsManagement';
 import SuperAdminDashboard from '@/components/admin/SuperAdminDashboard';
 import AcceptInvitePage from '@/components/invite/AcceptInvitePage';
+import Announcements from '@/pages/Announcements';
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ function AppContent() {
         <Route path="/create-school" element={<CreateSchool />} />
         <Route path="/schools" element={<SchoolsManagement />} />
         <Route path="/super-admin" element={<SuperAdminDashboard />} />
+        <Route path="/announcements" element={<Announcements />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
