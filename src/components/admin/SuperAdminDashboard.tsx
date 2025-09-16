@@ -9,8 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Building2, Users, Crown, Eye, Pause, Play, DollarSign } from 'lucide-react';
+import { Plus, Building2, Users, Crown, Eye, Pause, Play, DollarSign, Edit, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import SuperAdminAnalytics from './SuperAdminAnalytics';
 import FeeStructureManagement from '../super-admin/FeeStructureManagement';
 
@@ -51,7 +52,11 @@ export default function SuperAdminDashboard() {
   const queryClient = useQueryClient();
   const [createOrgDialogOpen, setCreateOrgDialogOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
+  const [deleteOrgDialogOpen, setDeleteOrgDialogOpen] = useState(false);
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [selectedOrgToDelete, setSelectedOrgToDelete] = useState<string>('');
 
   // Fetch organizations
   const { data: organizations, isLoading: orgsLoading } = useQuery({
@@ -167,6 +172,39 @@ export default function SuperAdminDashboard() {
 
   const handleViewUser = (userId: string) => {
     toast({ description: `Viewing user: ${userId}` });
+  };
+
+  const handleEditUser = (userId: string) => {
+    setSelectedUserId(userId);
+    setEditUserDialogOpen(true);
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(userId);
+      if (error) throw error;
+      
+      toast({ description: 'User deleted successfully' });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    } catch (error: any) {
+      toast({ variant: 'destructive', description: error.message });
+    }
+  };
+
+  const handleDeleteOrganization = async (orgId: string) => {
+    try {
+      const { error } = await supabase
+        .from('schools')
+        .update({ status: 'deleted' })
+        .eq('id', orgId);
+      if (error) throw error;
+      
+      toast({ description: 'Organization deleted successfully' });
+      queryClient.invalidateQueries({ queryKey: ['admin-organizations'] });
+      setDeleteOrgDialogOpen(false);
+    } catch (error: any) {
+      toast({ variant: 'destructive', description: error.message });
+    }
   };
 
   const inviteUserMutation = useMutation({
@@ -341,6 +379,22 @@ export default function SuperAdminDashboard() {
               </form>
             </DialogContent>
           </Dialog>
+
+          {/* Edit User Dialog */}
+          <Dialog open={editUserDialogOpen} onOpenChange={setEditUserDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit User</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p>User editing functionality would be implemented here.</p>
+                <p className="text-sm text-muted-foreground">
+                  This would allow editing user roles, permissions, and basic information.
+                </p>
+                <Button onClick={() => setEditUserDialogOpen(false)}>Close</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -403,6 +457,28 @@ export default function SuperAdminDashboard() {
                           <Play className="h-4 w-4 mr-1" />
                           Activate
                         </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Organization</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete "{org.name}"? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteOrganization(org.id)}>
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   ))}
@@ -453,6 +529,36 @@ export default function SuperAdminDashboard() {
                           <Eye className="h-4 w-4 mr-1" />
                           View
                         </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditUser(user.id)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete User</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this user? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   ))}

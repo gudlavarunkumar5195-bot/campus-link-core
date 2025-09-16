@@ -139,3 +139,23 @@ export const useStaff = () => {
     }
   });
 };
+
+// Get sections for a specific class
+export const useClassSections = (classId?: string) => {
+  return useQuery({
+    queryKey: ['class_sections', classId],
+    queryFn: async () => {
+      if (!classId) return [];
+      
+      const { data, error } = await supabase
+        .from('class_structure')
+        .select('sections')
+        .eq('id', classId)
+        .single();
+      
+      if (error) return [];
+      return data?.sections || [];
+    },
+    enabled: !!classId
+  });
+};

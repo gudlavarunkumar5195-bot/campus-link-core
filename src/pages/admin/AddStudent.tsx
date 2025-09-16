@@ -13,7 +13,7 @@ import { ArrowLeft, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
-import { useClasses, GENDER_OPTIONS, BLOOD_GROUPS, TRANSPORT_MODES, RELIGIONS, GUARDIAN_RELATIONSHIPS, FEE_CATEGORIES } from '@/hooks/useDropdownData';
+import { useClasses, useClassSections, GENDER_OPTIONS, BLOOD_GROUPS, TRANSPORT_MODES, RELIGIONS, GUARDIAN_RELATIONSHIPS, FEE_CATEGORIES } from '@/hooks/useDropdownData';
 
 const AddStudent = () => {
   const navigate = useNavigate();
@@ -77,6 +77,8 @@ const AddStudent = () => {
     // Additional
      documents_submitted: [] as string[]
    });
+   
+  const { data: sections = [] } = useClassSections(formData.class_id);
 
   // Generate a unique student ID like STD2025-1234 and ensure it's unique in DB
   const generateCandidateId = () => `STD${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -408,11 +410,27 @@ const AddStudent = () => {
               </div>
               <div>
                 <Label htmlFor="section">Section</Label>
-                <Input
-                  id="section"
-                  value={formData.section}
-                  onChange={(e) => handleInputChange('section', e.target.value)}
-                />
+                {sections.length > 0 ? (
+                  <Select value={formData.section} onValueChange={(value) => handleInputChange('section', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select section" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                      {sections.map((section) => (
+                        <SelectItem key={section} value={section}>
+                          {section}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id="section"
+                    value={formData.section}
+                    onChange={(e) => handleInputChange('section', e.target.value)}
+                    placeholder="Enter section (e.g., A, B, C)"
+                  />
+                )}
               </div>
               <div>
                 <Label htmlFor="academic_year">Academic Year</Label>
