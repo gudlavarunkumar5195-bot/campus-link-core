@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Users } from 'lucide-react';
+import TeacherStudentsView from '@/components/teacher/TeacherStudentsView';
 
 const Students = () => {
   const navigate = useNavigate();
@@ -36,25 +37,34 @@ const Students = () => {
             </Button>
             <div>
               <h1 className="text-3xl font-bold">Students</h1>
-              <p className="text-gray-600">Manage student information and records</p>
+              <p className="text-gray-600">
+                {profile?.role === 'teacher' 
+                  ? 'View students from your assigned classes'
+                  : 'Manage student information and records'
+                }
+              </p>
             </div>
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Users className="h-5 w-5" />
-              <span>Student Management</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600">
-              Student management functionality will be implemented here. 
-              This page will show student lists, profiles, and management tools.
-            </p>
-          </CardContent>
-        </Card>
+        {profile?.role === 'teacher' ? (
+          <TeacherStudentsView />
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Users className="h-5 w-5" />
+                <span>Student Management</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">
+                Student management functionality will be implemented here. 
+                This page will show student lists, profiles, and management tools.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

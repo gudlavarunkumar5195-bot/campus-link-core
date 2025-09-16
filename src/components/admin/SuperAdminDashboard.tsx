@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Building2, Users, Crown, Eye, Pause, Play } from 'lucide-react';
+import { Plus, Building2, Users, Crown, Eye, Pause, Play, DollarSign } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import SuperAdminAnalytics from './SuperAdminAnalytics';
+import FeeStructureManagement from '../super-admin/FeeStructureManagement';
 
 interface Organization {
   id: string;
@@ -335,6 +336,7 @@ export default function SuperAdminDashboard() {
           <TabsTrigger value="organizations">Organizations</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="plans">Plans</TabsTrigger>
+          <TabsTrigger value="fees">Fee Management</TabsTrigger>
         </TabsList>
 
         <TabsContent value="organizations">
@@ -500,6 +502,10 @@ export default function SuperAdminDashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="fees">
+          <FeeStructureManagement />
         </TabsContent>
       </Tabs>
     </div>

@@ -43,7 +43,7 @@ const TeacherAttendanceView = () => {
         .from('teacher_class_assignments')
         .select(`
           class_id,
-          classes (
+          classes!inner (
             id,
             name,
             grade_level,
@@ -56,8 +56,8 @@ const TeacherAttendanceView = () => {
       
       // Remove duplicates
       const uniqueClasses = data.reduce((acc, item) => {
-        const classId = item.classes.id;
-        if (!acc.find(c => c.id === classId)) {
+        const classId = item.classes?.id;
+        if (classId && item.classes && !acc.find(c => c.id === classId)) {
           acc.push(item.classes);
         }
         return acc;

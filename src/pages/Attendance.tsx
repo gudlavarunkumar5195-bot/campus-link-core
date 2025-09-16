@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, ClipboardList } from 'lucide-react';
 import StudentAttendanceView from '@/components/students/StudentAttendanceView';
+import TeacherAttendanceView from '@/components/teacher/TeacherAttendanceView';
 
 const Attendance = () => {
   const navigate = useNavigate();
@@ -47,6 +48,30 @@ const Attendance = () => {
     );
   }
 
+  if (profile?.role === 'teacher') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="flex items-center space-x-4 mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back</span>
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Take Attendance</h1>
+              <p className="text-gray-600">Mark attendance for your classes</p>
+            </div>
+          </div>
+          <TeacherAttendanceView />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
@@ -61,7 +86,7 @@ const Attendance = () => {
               <span>Back</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Attendance</h1>
+              <h1 className="text-3xl font-bold">Attendance Management</h1>
               <p className="text-gray-600">Manage student and staff attendance</p>
             </div>
           </div>

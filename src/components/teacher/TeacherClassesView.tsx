@@ -40,14 +40,14 @@ const TeacherClassesView = () => {
           class_id,
           subject_id,
           is_class_teacher,
-          classes (
+          classes!inner (
             id,
             name,
             grade_level,
             academic_year,
             students (id)
           ),
-          subjects (
+          subjects!inner (
             id,
             name,
             code
@@ -160,17 +160,21 @@ const TeacherClassesView = () => {
 
   // Group classes by class
   const groupedClasses = assignedClasses?.reduce((acc, assignment) => {
-    const classId = assignment.classes.id;
-    if (!acc[classId]) {
-      acc[classId] = {
-        class: assignment.classes,
-        subjects: [],
-        isClassTeacher: false
-      };
-    }
-    acc[classId].subjects.push(assignment.subjects);
-    if (assignment.is_class_teacher) {
-      acc[classId].isClassTeacher = true;
+    const classId = assignment.classes?.id;
+    if (classId && assignment.classes) {
+      if (!acc[classId]) {
+        acc[classId] = {
+          class: assignment.classes,
+          subjects: [],
+          isClassTeacher: false
+        };
+      }
+      if (assignment.subjects) {
+        acc[classId].subjects.push(assignment.subjects);
+      }
+      if (assignment.is_class_teacher) {
+        acc[classId].isClassTeacher = true;
+      }
     }
     return acc;
   }, {} as Record<string, any>) || {};

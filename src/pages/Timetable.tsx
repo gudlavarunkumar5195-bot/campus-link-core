@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import StudentTimetableView from '@/components/students/StudentTimetableView';
+import TeacherTimetableView from '@/components/teacher/TeacherTimetableView';
 
 const Timetable = () => {
   const navigate = useNavigate();
@@ -47,6 +48,30 @@ const Timetable = () => {
     );
   }
 
+  if (profile?.role === 'teacher') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="flex items-center space-x-4 mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back</span>
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">My Teaching Schedule</h1>
+              <p className="text-gray-600">View your teaching timetable</p>
+            </div>
+          </div>
+          <TeacherTimetableView />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
@@ -61,8 +86,8 @@ const Timetable = () => {
               <span>Back</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Timetable</h1>
-              <p className="text-gray-600">View and manage class schedules</p>
+              <h1 className="text-3xl font-bold">Timetable Management</h1>
+              <p className="text-gray-600">Manage and view class schedules</p>
             </div>
           </div>
         </div>

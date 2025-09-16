@@ -80,7 +80,7 @@ const FeeStructureManagement = () => {
           discount_amount,
           final_amount,
           is_active,
-          classes (
+          classes!inner (
             name,
             grade_level
           )
@@ -352,7 +352,7 @@ const FeeStructureManagement = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span className="text-lg">
-                      {feeStructure.classes.name} - Grade {feeStructure.classes.grade_level}
+                      {feeStructure.classes?.name || 'Unknown Class'} - Grade {feeStructure.classes?.grade_level || 'N/A'}
                     </span>
                     <Badge variant={feeStructure.is_active ? 'default' : 'secondary'}>
                       {feeStructure.is_active ? 'Active' : 'Inactive'}
