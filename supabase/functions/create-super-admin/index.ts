@@ -18,22 +18,36 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Verify requester and require Super Admin (role=admin, school_id IS NULL)
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    if (authError || !user) throw new Error("Authentication failed");
-
-    const { data: requesterProfile, error: profileError } = await supabaseAdmin
+    // Check if any super admins exist
+    const { data: existingSuperAdmins, error: checkError } = await supabaseAdmin
       .from("profiles")
-      .select("role, school_id")
-      .eq("id", user.id)
-      .single();
+      .select("id")
+      .eq("role", "admin")
+      .is("school_id", null)
+      .limit(1);
 
-    if (profileError || !requesterProfile || requesterProfile.role !== "admin" || requesterProfile.school_id !== null) {
-      throw new Error("Super admin access required");
+    if (checkError) throw new Error(`Failed to check existing super admins: ${checkError.message}`);
+
+    // If super admins exist, require authentication and authorization
+    if (existingSuperAdmins && existingSuperAdmins.length > 0) {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) throw new Error("No authorization header");
+
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+      if (authError || !user) throw new Error("Authentication failed");
+
+      const { data: requesterProfile, error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .select("role, school_id")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError || !requesterProfile || requesterProfile.role !== "admin" || requesterProfile.school_id !== null) {
+        throw new Error("Super admin access required");
+      }
+    } else {
+      console.log("No existing super admins found, allowing initial super admin creation");
     }
 
     const body = await req.json();
