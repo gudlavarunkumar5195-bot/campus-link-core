@@ -31,19 +31,19 @@ const Header: React.FC = () => {
   if (!user || !profile) return null;
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="glass-effect border-b border-white/20 px-6 py-4 backdrop-blur-md">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold text-foreground">
             School ERP System
           </h1>
         </div>
         
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
             <User className="h-4 w-4" />
             <span>{profile.first_name} {profile.last_name}</span>
-            <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+            <span className="text-xs bg-muted/50 text-muted-foreground px-2 py-1 rounded">
               {profile.role}
             </span>
           </div>
@@ -52,7 +52,7 @@ const Header: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleLogout}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 glass-effect"
           >
             <LogOut className="h-4 w-4" />
             <span>Logout</span>

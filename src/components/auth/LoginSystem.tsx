@@ -183,17 +183,17 @@ const LoginSystem = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white">
+    <div className="min-h-screen page-container flex items-center justify-center p-4">
+      <Card className="w-full max-w-md form-container border-white/50 shadow-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
+          <CardTitle className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
             <LogIn className="h-6 w-6" />
             School Management System
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="credentials" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-2 glass-effect">
               <TabsTrigger value="credentials">Username Login</TabsTrigger>
               <TabsTrigger value="email">Email Login</TabsTrigger>
             </TabsList>
@@ -209,7 +209,7 @@ const LoginSystem = () => {
                     onChange={(e) => setCredentialsLogin({ ...credentialsLogin, username: e.target.value })}
                     placeholder="Enter your username"
                     required
-                    className="bg-white"
+                    className="glass-effect"
                   />
                 </div>
 
@@ -223,7 +223,7 @@ const LoginSystem = () => {
                       onChange={(e) => setCredentialsLogin({ ...credentialsLogin, password: e.target.value })}
                       placeholder="Enter your password"
                       required
-                      className="bg-white pr-10"
+                      className="glass-effect pr-10"
                     />
                     <button
                       type="button"
@@ -235,7 +235,7 @@ const LoginSystem = () => {
                   </div>
                 </div>
 
-                <Button type="submit" disabled={loading} className="w-full">
+                <Button type="submit" disabled={loading} className="w-full glass-effect">
                   {loading ? 'Signing in...' : 'Sign in with Username'}
                 </Button>
               </form>
@@ -252,7 +252,7 @@ const LoginSystem = () => {
                     onChange={(e) => setEmailLogin({ ...emailLogin, email: e.target.value })}
                     placeholder="Enter your email"
                     required
-                    className="bg-white"
+                    className="glass-effect"
                   />
                 </div>
 
@@ -266,7 +266,7 @@ const LoginSystem = () => {
                       onChange={(e) => setEmailLogin({ ...emailLogin, password: e.target.value })}
                       placeholder="Enter your password"
                       required
-                      className="bg-white pr-10"
+                      className="glass-effect pr-10"
                     />
                     <button
                       type="button"
@@ -278,14 +278,14 @@ const LoginSystem = () => {
                   </div>
                 </div>
 
-                <Button type="submit" disabled={loading} className="w-full">
+                <Button type="submit" disabled={loading} className="w-full glass-effect">
                   {loading ? 'Signing in...' : 'Sign in with Email'}
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
 
-          <div className="mt-4 text-center text-sm text-gray-600">
+          <div className="mt-4 text-center text-sm text-muted-foreground">
             <p>Use your username and default password provided by admin</p>
             <p>or sign in with your registered email</p>
           </div>
@@ -295,7 +295,7 @@ const LoginSystem = () => {
             <Button 
               variant="outline" 
               onClick={() => setShowSignUp(true)}
-              className="w-full"
+              className="w-full glass-effect"
             >
               <UserPlus className="h-4 w-4 mr-2" />
               Create New Account
@@ -303,11 +303,11 @@ const LoginSystem = () => {
           </div>
 
           {/* Super Admin Credentials Manager */}
-          <div className="mt-6 pt-4 border-t border-gray-200 text-center">
-            <p className="text-xs text-gray-500 mb-2">System Administration:</p>
+          <div className="mt-6 pt-4 border-t border-white/20 text-center">
+            <p className="text-xs text-muted-foreground mb-2">System Administration:</p>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="text-xs">
+                <Button variant="outline" size="sm" className="text-xs glass-effect">
                   <Crown className="h-3 w-3 mr-1" />
                   Super Admin Access
                 </Button>

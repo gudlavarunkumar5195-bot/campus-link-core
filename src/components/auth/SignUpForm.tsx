@@ -174,12 +174,12 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onBackToLogin }) => {
   };
 
   return (
-    <Card className="w-full max-w-md bg-white border-gray-200 shadow-lg">
+    <Card className="w-full max-w-md form-container border-white/50 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center text-amber-600">
+        <CardTitle className="text-2xl font-bold text-center text-foreground">
           Create Account
         </CardTitle>
-        <CardDescription className="text-center text-gray-600">
+        <CardDescription className="text-center text-muted-foreground">
           Join your school's ERP system
         </CardDescription>
       </CardHeader>
@@ -187,43 +187,43 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onBackToLogin }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="firstName" className="text-red-700 font-semibold">First Name</Label>
+              <Label htmlFor="firstName" className="text-foreground font-semibold">First Name</Label>
               <Input
                 id="firstName"
                 type="text"
                 value={formData.firstName}
                 onChange={handleInputChange('firstName')}
                 required
-                className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
+                className="glass-effect"
               />
             </div>
             <div>
-              <Label htmlFor="lastName" className="text-red-700 font-semibold">Last Name</Label>
+              <Label htmlFor="lastName" className="text-foreground font-semibold">Last Name</Label>
               <Input
                 id="lastName"
                 type="text"
                 value={formData.lastName}
                 onChange={handleInputChange('lastName')}
                 required
-                className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
+                className="glass-effect"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="email" className="text-red-700 font-semibold">Email</Label>
+            <Label htmlFor="email" className="text-foreground font-semibold">Email</Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={handleInputChange('email')}
               required
-              className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
+              className="glass-effect"
             />
           </div>
 
           <div>
-            <Label htmlFor="password" className="text-red-700 font-semibold">Password</Label>
+            <Label htmlFor="password" className="text-foreground font-semibold">Password</Label>
             <Input
               id="password"
               type="password"
@@ -231,12 +231,12 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onBackToLogin }) => {
               onChange={handleInputChange('password')}
               required
               minLength={6}
-              className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
+              className="glass-effect"
             />
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword" className="text-red-700 font-semibold">Confirm Password</Label>
+            <Label htmlFor="confirmPassword" className="text-foreground font-semibold">Confirm Password</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -244,21 +244,21 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onBackToLogin }) => {
               onChange={handleInputChange('confirmPassword')}
               required
               minLength={6}
-              className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
+              className="glass-effect"
             />
           </div>
 
           <div>
-            <Label className="text-red-700 font-semibold">School</Label>
+            <Label className="text-foreground font-semibold">School</Label>
             <Select value={formData.schoolId} onValueChange={handleSelectChange('schoolId')}>
-              <SelectTrigger className="border-gray-300 focus:border-amber-500 focus:ring-amber-500">
+              <SelectTrigger className="glass-effect">
                 <SelectValue placeholder={schoolsLoading ? "Loading schools..." : "Select your school"} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
                 {schools.map((school) => (
                   <SelectItem key={school.id} value={school.id}>
                     {school.name}
-                    {school.address && <span className="text-sm text-gray-500 ml-2">({school.address})</span>}
+                    {school.address && <span className="text-sm text-muted-foreground ml-2">({school.address})</span>}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -266,12 +266,12 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onBackToLogin }) => {
           </div>
 
           <div>
-            <Label className="text-red-700 font-semibold">Role</Label>
+            <Label className="text-foreground font-semibold">Role</Label>
             <Select value={formData.role} onValueChange={handleSelectChange('role')}>
-              <SelectTrigger className="border-gray-300 focus:border-amber-500 focus:ring-amber-500">
+              <SelectTrigger className="glass-effect">
                 <SelectValue placeholder="Select your role" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
                 <SelectItem value="student">Student</SelectItem>
                 <SelectItem value="teacher">Teacher</SelectItem>
                 <SelectItem value="admin">Administrator</SelectItem>
@@ -283,7 +283,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onBackToLogin }) => {
           <div className="flex flex-col gap-2">
             <Button 
               type="submit" 
-              className="w-full bg-green-600 hover:bg-green-700" 
+              className="w-full glass-effect" 
               disabled={loading || schoolsLoading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -293,7 +293,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onBackToLogin }) => {
             <Button 
               type="button" 
               variant="outline" 
-              className="w-full" 
+              className="w-full glass-effect" 
               onClick={onBackToLogin}
               disabled={loading}
             >

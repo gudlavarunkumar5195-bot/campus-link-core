@@ -63,65 +63,67 @@ const AuthForm: React.FC = () => {
 
   if (showSignUp) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <SignUpForm onBackToLogin={() => setShowSignUp(false)} />
+      <div className="min-h-screen page-container flex items-center justify-center">
+        <div className="form-container border-white/50 shadow-lg p-8 rounded-lg">
+          <SignUpForm onBackToLogin={() => setShowSignUp(false)} />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <Card className="w-full max-w-md bg-white border-gray-200 shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-amber-600">
-            School ERP Login
-          </CardTitle>
-          <CardDescription className="text-center text-gray-600">
-            Enter your credentials to access your school account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="email" className="text-red-700 font-semibold">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
-              />
-            </div>
-            <div>
-              <Label htmlFor="password" className="text-red-700 font-semibold">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Sign In
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full" 
-                onClick={() => setShowSignUp(true)}
-                disabled={loading}
-              >
-                Create New Account
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen page-container flex items-center justify-center">
+        <Card className="w-full max-w-md form-container border-white/50 shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center text-foreground">
+              School ERP Login
+            </CardTitle>
+            <CardDescription className="text-center text-muted-foreground">
+              Enter your credentials to access your school account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="email" className="text-foreground font-semibold">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="glass-effect"
+                />
+              </div>
+              <div>
+                <Label htmlFor="password" className="text-foreground font-semibold">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="glass-effect"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Button type="submit" className="w-full glass-effect" disabled={loading}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Sign In
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full glass-effect" 
+                  onClick={() => setShowSignUp(true)}
+                  disabled={loading}
+                >
+                  Create New Account
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
     </div>
   );
 };

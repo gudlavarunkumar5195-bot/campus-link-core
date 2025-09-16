@@ -274,141 +274,142 @@ export default function SuperAdminDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage organizations, users, and plans</p>
-        </div>
-        <div className="flex gap-2">
-          <Dialog open={createOrgDialogOpen} onOpenChange={setCreateOrgDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Organization
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Organization</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCreateOrg} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Organization Name</Label>
-                  <Input id="name" name="name" required />
-                </div>
-                <div>
-                  <Label htmlFor="slug">Slug (URL identifier)</Label>
-                  <Input id="slug" name="slug" pattern="^[a-z0-9-]+$" required />
+    <div className="min-h-screen page-container">
+      <div className="container mx-auto p-6 space-y-6 max-w-6xl">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Super Admin Dashboard</h1>
+            <p className="text-muted-foreground">Manage organizations, users, and plans</p>
+          </div>
+          <div className="flex gap-2">
+            <Dialog open={createOrgDialogOpen} onOpenChange={setCreateOrgDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="glass-effect">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Organization
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="form-container border-white/50 shadow-lg">
+                <DialogHeader>
+                  <DialogTitle>Create New Organization</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateOrg} className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">Organization Name</Label>
+                    <Input id="name" name="name" required className="glass-effect" />
+                  </div>
+                  <div>
+                    <Label htmlFor="slug">Slug (URL identifier)</Label>
+                    <Input id="slug" name="slug" pattern="^[a-z0-9-]+$" required className="glass-effect" />
+                    <p className="text-sm text-muted-foreground">
+                      Only lowercase letters, numbers, and hyphens
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="planSlug">Initial Plan</Label>
+                    <Select name="planSlug" defaultValue="free">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                        {plans?.map((plan) => (
+                          <SelectItem key={plan.id} value={plan.slug}>
+                            {plan.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button type="submit" className="w-full glass-effect" disabled={createOrgMutation.isPending}>
+                    {createOrgMutation.isPending ? 'Creating...' : 'Create Organization'}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="glass-effect">
+                  <Users className="h-4 w-4 mr-2" />
+                  Invite User
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="form-container border-white/50 shadow-lg">
+                <DialogHeader>
+                  <DialogTitle>Invite User to Organization</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleInviteUser} className="space-y-4">
+                  <div>
+                    <Label htmlFor="organizationSelect">Organization</Label>
+                    <Select name="organizationId" value={selectedOrgId} onValueChange={setSelectedOrgId} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select organization" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                        {organizations?.map((org) => (
+                          <SelectItem key={org.id} value={org.id}>
+                            {org.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input id="email" name="email" type="email" required className="glass-effect" />
+                  </div>
+                  <div>
+                    <Label htmlFor="roleSlug">Role</Label>
+                    <Select name="roleSlug" defaultValue="member">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                        <SelectItem value="owner">Owner</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="teacher">Teacher</SelectItem>
+                        <SelectItem value="member">Member</SelectItem>
+                        <SelectItem value="viewer">Viewer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button type="submit" className="w-full glass-effect" disabled={inviteUserMutation.isPending}>
+                    {inviteUserMutation.isPending ? 'Sending Invitation...' : 'Send Invitation'}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit User Dialog */}
+            <Dialog open={editUserDialogOpen} onOpenChange={setEditUserDialogOpen}>
+              <DialogContent className="form-container border-white/50 shadow-lg">
+                <DialogHeader>
+                  <DialogTitle>Edit User</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p>User editing functionality would be implemented here.</p>
                   <p className="text-sm text-muted-foreground">
-                    Only lowercase letters, numbers, and hyphens
+                    This would allow editing user roles, permissions, and basic information.
                   </p>
+                  <Button onClick={() => setEditUserDialogOpen(false)} className="glass-effect">Close</Button>
                 </div>
-                <div>
-                  <Label htmlFor="planSlug">Initial Plan</Label>
-                  <Select name="planSlug" defaultValue="free">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {plans?.map((plan) => (
-                        <SelectItem key={plan.id} value={plan.slug}>
-                          {plan.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button type="submit" className="w-full" disabled={createOrgMutation.isPending}>
-                  {createOrgMutation.isPending ? 'Creating...' : 'Create Organization'}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Users className="h-4 w-4 mr-2" />
-                Invite User
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Invite User to Organization</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleInviteUser} className="space-y-4">
-                <div>
-                  <Label htmlFor="organizationSelect">Organization</Label>
-                  <Select name="organizationId" value={selectedOrgId} onValueChange={setSelectedOrgId} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select organization" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {organizations?.map((org) => (
-                        <SelectItem key={org.id} value={org.id}>
-                          {org.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" name="email" type="email" required />
-                </div>
-                <div>
-                  <Label htmlFor="roleSlug">Role</Label>
-                  <Select name="roleSlug" defaultValue="member">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="owner">Owner</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="teacher">Teacher</SelectItem>
-                      <SelectItem value="member">Member</SelectItem>
-                      <SelectItem value="viewer">Viewer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button type="submit" className="w-full" disabled={inviteUserMutation.isPending}>
-                  {inviteUserMutation.isPending ? 'Sending Invitation...' : 'Send Invitation'}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-
-          {/* Edit User Dialog */}
-          <Dialog open={editUserDialogOpen} onOpenChange={setEditUserDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit User</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <p>User editing functionality would be implemented here.</p>
-                <p className="text-sm text-muted-foreground">
-                  This would allow editing user roles, permissions, and basic information.
-                </p>
-                <Button onClick={() => setEditUserDialogOpen(false)}>Close</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-      </div>
 
-      <Tabs defaultValue="organizations" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="organizations">Organizations</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="plans">Plans</TabsTrigger>
-          <TabsTrigger value="fees">Fee Management</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="organizations" className="space-y-4">
+          <TabsList className="glass-effect">
+            <TabsTrigger value="organizations">Organizations</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="plans">Plans</TabsTrigger>
+            <TabsTrigger value="fees">Fee Management</TabsTrigger>
+          </TabsList>
 
         <TabsContent value="organizations">
           <SuperAdminAnalytics />
-          <Card className="mt-6">
+          <Card className="mt-6 form-container border-white/50 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
@@ -569,7 +570,7 @@ export default function SuperAdminDashboard() {
         </TabsContent>
 
         <TabsContent value="plans">
-          <Card>
+          <Card className="form-container border-white/50 shadow-lg">
             <CardHeader>
               <CardTitle>Billing Plans</CardTitle>
             </CardHeader>
@@ -623,7 +624,8 @@ export default function SuperAdminDashboard() {
         <TabsContent value="fees">
           <FeeStructureManagement />
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
     </div>
   );
 }
