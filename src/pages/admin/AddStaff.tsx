@@ -98,61 +98,51 @@ const AddStaff = () => {
     setLoading(true);
 
     try {
-      const profileId = uuidv4();
-      
-      // Create profile with proper type casting for gender
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: profileId,
+      const defaultPassword = `School${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+
+      // Use secure Edge Function to create auth user + profile + staff record
+      const { data, error } = await supabase.functions.invoke('admin-create-staff', {
+        body: {
+          school_id: profile.school_id,
           first_name: formData.first_name,
           last_name: formData.last_name,
           email: formData.email,
           phone: formData.phone,
-          role: 'admin' as const,
-          school_id: profile.school_id,
           date_of_birth: formData.date_of_birth || null,
-          gender: (formData.gender as "male" | "female" | "other") || null,
-          address: formData.address,
-          emergency_contact_name: formData.emergency_contact_name,
-          emergency_contact_phone: formData.emergency_contact_phone,
-          nationality: formData.nationality,
-          religion: formData.religion,
-          blood_group: formData.blood_group,
-          medical_conditions: formData.medical_conditions,
-          allergies: formData.allergies,
-          special_needs: formData.special_needs,
+          gender: formData.gender || null,
+          address: formData.address || null,
+          emergency_contact_name: formData.emergency_contact_name || null,
+          emergency_contact_phone: formData.emergency_contact_phone || null,
+          nationality: formData.nationality || null,
+          religion: formData.religion || null,
+          blood_group: formData.blood_group || null,
+          medical_conditions: formData.medical_conditions || null,
+          allergies: formData.allergies || null,
+          special_needs: formData.special_needs || null,
           employee_id: formData.employee_id,
-        })
-        .select()
-        .single();
-
-      if (profileError) throw profileError;
-
-      // Create staff record
-      const { error: staffError } = await supabase
-        .from('staff')
-        .insert({
-          profile_id: profileId,
-          employee_id: formData.employee_id,
+          
+          // Staff-specific fields
           position: formData.position,
-          hire_date: formData.hire_date,
-          salary: formData.salary ? parseFloat(formData.salary) : null,
-          department: formData.department,
+          department: formData.department || null,
           supervisor_id: formData.supervisor_id || null,
+          responsibilities: formData.responsibilities || [],
+          certifications: formData.certifications || [],
+          hire_date: formData.hire_date,
           employment_type: formData.employment_type,
-          shift_timing: formData.shift_timing,
-          probation_period: formData.probation_period ? parseInt(formData.probation_period) : null,
+          salary: formData.salary || null,
+          shift_timing: formData.shift_timing || null,
+          probation_period: formData.probation_period || null,
           contract_end_date: formData.contract_end_date || null,
-          responsibilities: formData.responsibilities,
-          certifications: formData.certifications,
-        });
+          
+          password: defaultPassword,
+        },
+      });
 
-      if (staffError) throw staffError;
+      if (error || !data?.success) throw new Error(data?.error || error?.message || 'Failed to add staff member');
 
       toast({
         title: "Success",
-        description: "Staff member added successfully",
+        description: `Staff member added successfully. Temporary password: ${defaultPassword}`,
       });
 
       navigate('/');

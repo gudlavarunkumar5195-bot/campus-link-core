@@ -65,15 +65,18 @@ const UserCredentialsManager: React.FC<UserCredentialsManagerProps> = ({ schoolI
     mutationFn: async () => {
       // Get all profiles in the school without credentials
       const existingCredentialIds = credentials?.map(c => c.profile_id) || [];
-      const notInClause = existingCredentialIds.length > 0 
-        ? `(${existingCredentialIds.map(id => `'${id}'`).join(',')})` 
-        : "('')";
 
-      const { data: profiles, error: profilesError } = await supabase
+      let profilesQuery = supabase
         .from('profiles')
         .select('id, first_name, last_name, role')
-        .eq('school_id', schoolId)
-        .not('id', 'in', notInClause);
+        .eq('school_id', schoolId);
+
+      // Only add NOT IN filter if there are existing credentials
+      if (existingCredentialIds.length > 0) {
+        profilesQuery = profilesQuery.not('id', 'in', `(${existingCredentialIds.join(',')})`);
+      }
+
+      const { data: profiles, error: profilesError } = await profilesQuery;
 
       if (profilesError) throw profilesError;
 
