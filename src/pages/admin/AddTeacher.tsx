@@ -63,6 +63,31 @@ const AddTeacher = () => {
     special_needs: '',
   });
 
+  // Generate unique employee id like EMP2025-1234 across profiles
+  const genEmpId = () => `EMP${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const ensureUniqueEmployeeId = async (): Promise<string> => {
+    for (let i = 0; i < 5; i++) {
+      const candidate = genEmpId();
+      const { error, count } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('employee_id', candidate);
+      if (!error && (count ?? 0) === 0) return candidate;
+    }
+    return genEmpId();
+  };
+
+  React.useEffect(() => {
+    (async () => {
+      if (!formData.employee_id) {
+        const unique = await ensureUniqueEmployeeId();
+        setFormData(prev => ({ ...prev, employee_id: unique }));
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile?.school_id) {

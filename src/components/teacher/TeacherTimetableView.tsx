@@ -55,22 +55,24 @@ const TeacherTimetableView = () => {
     return <div className="flex items-center justify-center py-12">Loading your timetable...</div>;
   }
 
-  const timetable = timetableData || [];
+  const timetable: any[] = Array.isArray(timetableData) ? (timetableData as any[]) : [];
+
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   
-  // Group timetable by day
-  const timetableByDay = timetable.reduce((acc, item) => {
-    const day = dayNames[item.day_of_week];
+  // Group timetable by day (with guards)
+  const timetableByDay = timetable.reduce((acc: Record<string, any[]>, item: any) => {
+    const dayIndex = Math.max(0, Math.min(6, Number(item?.day_of_week ?? 0)));
+    const day = dayNames[dayIndex] || 'Unknown';
     if (!acc[day]) acc[day] = [];
     acc[day].push(item);
     return acc;
-  }, {} as Record<string, typeof timetable>);
+  }, {} as Record<string, any[]>);
 
-  // Calculate teaching stats
+  // Calculate teaching stats (with null-safety)
   const stats = React.useMemo(() => {
-    const uniqueClasses = new Set(timetable.map(t => t.classes.id));
-    const uniqueSubjects = new Set(timetable.map(t => t.subjects.id));
+    const uniqueClasses = new Set(timetable.map((t: any) => t?.classes?.id).filter(Boolean));
+    const uniqueSubjects = new Set(timetable.map((t: any) => t?.subjects?.id).filter(Boolean));
     const totalPeriods = timetable.length;
     const daysTeaching = Object.keys(timetableByDay).length;
 
@@ -83,6 +85,7 @@ const TeacherTimetableView = () => {
   }, [timetable, timetableByDay]);
 
   const formatTime = (time: string) => {
+    if (!time) return '';
     return new Date(`1970-01-01T${time}`).toLocaleTimeString([], { 
       hour: '2-digit', 
       minute: '2-digit',
@@ -159,7 +162,7 @@ const TeacherTimetableView = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {periods.map((period) => (
+                  {(periods as any[]).map((period: any) => (
                     <div
                       key={period.id}
                       className="border rounded-lg p-4 hover:shadow-md transition-shadow"

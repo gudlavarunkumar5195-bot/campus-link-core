@@ -194,11 +194,24 @@ export default function SuperAdminDashboard() {
   const handleCreateOrg = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+
+    const rawSlug = (formData.get('slug') as string) || '';
+    // Sanitize slug: strip protocol/paths and keep lowercase letters, numbers and hyphens
+    let cleanedSlug = rawSlug.toLowerCase()
+      .replace(/^https?:\/\//, '')
+      .replace(/\/.*/, '')
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/--+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (cleanedSlug !== rawSlug) {
+      toast({ description: `Slug adjusted to: ${cleanedSlug}` });
+    }
     
     createOrgMutation.mutate({
       name: formData.get('name') as string,
-      slug: formData.get('slug') as string,
-      planSlug: formData.get('planSlug') as string
+      slug: cleanedSlug,
+      planSlug: (formData.get('planSlug') as string) || 'free'
     });
   };
 

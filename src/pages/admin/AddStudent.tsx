@@ -75,8 +75,33 @@ const AddStudent = () => {
     scholarship_details: '',
     
     // Additional
-    documents_submitted: [] as string[]
-  });
+     documents_submitted: [] as string[]
+   });
+
+  // Generate a unique student ID like STD2025-1234 and ensure it's unique in DB
+  const generateCandidateId = () => `STD${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const ensureUniqueStudentId = async (): Promise<string> => {
+    for (let i = 0; i < 5; i++) {
+      const candidate = generateCandidateId();
+      const { error, count } = await supabase
+        .from('students')
+        .select('id', { count: 'exact', head: true })
+        .eq('student_id', candidate);
+      if (!error && (count ?? 0) === 0) return candidate;
+    }
+    return generateCandidateId();
+  };
+
+  React.useEffect(() => {
+    (async () => {
+      if (!formData.student_id) {
+        const uniqueId = await ensureUniqueStudentId();
+        setFormData(prev => ({ ...prev, student_id: uniqueId }));
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,80 +117,74 @@ const AddStudent = () => {
     setLoading(true);
 
     try {
-      const profileId = uuidv4();
-      
-      // Create profile with proper type casting for gender
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: profileId,
+      // Generate a default password for the student
+      const defaultPassword = `School${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+
+      // Invoke secure Edge Function to create auth user + profile + student record
+      const { data, error } = await supabase.functions.invoke('admin-create-student', {
+        body: {
+          school_id: profile.school_id,
+          // Profile basics
           first_name: formData.first_name,
           last_name: formData.last_name,
           email: formData.email,
           phone: formData.phone,
-          role: 'student' as const,
-          school_id: profile.school_id,
           date_of_birth: formData.date_of_birth || null,
-          gender: (formData.gender as "male" | "female" | "other") || null,
-          address: formData.address,
-          emergency_contact_name: formData.emergency_contact_name,
-          emergency_contact_phone: formData.emergency_contact_phone,
-          nationality: formData.nationality,
-          religion: formData.religion,
-          blood_group: formData.blood_group,
-          previous_school: formData.previous_school,
-          guardian_name: formData.guardian_name,
-          guardian_phone: formData.guardian_phone,
-          guardian_email: formData.guardian_email,
-          guardian_relationship: formData.guardian_relationship,
-          transport_mode: formData.transport_mode,
-          medical_conditions: formData.medical_conditions,
-          allergies: formData.allergies,
-          special_needs: formData.special_needs,
-        })
-        .select()
-        .single();
+          gender: formData.gender || null,
+          address: formData.address || null,
+          emergency_contact_name: formData.emergency_contact_name || null,
+          emergency_contact_phone: formData.emergency_contact_phone || null,
+          nationality: formData.nationality || null,
+          religion: formData.religion || null,
+          blood_group: formData.blood_group || null,
+          previous_school: formData.previous_school || null,
+          guardian_name: formData.guardian_name || null,
+          guardian_phone: formData.guardian_phone || null,
+          guardian_email: formData.guardian_email || null,
+          guardian_relationship: formData.guardian_relationship || null,
+          transport_mode: formData.transport_mode || null,
+          medical_conditions: formData.medical_conditions || null,
+          allergies: formData.allergies || null,
+          special_needs: formData.special_needs || null,
 
-      if (profileError) throw profileError;
-
-      // Create student record
-      const { error: studentError } = await supabase
-        .from('students')
-        .insert({
-          profile_id: profileId,
+          // Student specifics
           student_id: formData.student_id,
-          roll_number: formData.roll_number,
+          roll_number: formData.roll_number || null,
           class_id: formData.class_id || null,
           admission_date: formData.admission_date,
-          parent_name: formData.parent_name,
-          parent_phone: formData.parent_phone,
-          parent_email: formData.parent_email,
-          medical_info: formData.medical_info,
-          academic_year: formData.academic_year,
-          section: formData.section,
+          parent_name: formData.parent_name || null,
+          parent_phone: formData.parent_phone || null,
+          parent_email: formData.parent_email || null,
+          medical_info: formData.medical_info || null,
+          academic_year: formData.academic_year || null,
+          section: formData.section || null,
           hostel_resident: formData.hostel_resident,
           transport_required: formData.transport_required,
-          fee_category: formData.fee_category,
-          scholarship_details: formData.scholarship_details,
-          previous_class: formData.previous_class,
-          tc_number: formData.tc_number,
-          documents_submitted: formData.documents_submitted,
-        });
+          fee_category: formData.fee_category || null,
+          scholarship_details: formData.scholarship_details || null,
+          previous_class: formData.previous_class || null,
+          tc_number: formData.tc_number || null,
+          documents_submitted: formData.documents_submitted || [],
 
-      if (studentError) throw studentError;
+          // Credentials
+          password: defaultPassword,
+        },
+      });
+
+      if (error || !data?.success) throw new Error(data?.error || error?.message || 'Failed to add student');
 
       toast({
-        title: "Success",
-        description: "Student added successfully",
+        title: 'Success',
+        description: `Student added successfully. Temporary password: ${defaultPassword}`,
       });
 
       navigate('/');
     } catch (error: any) {
       console.error('Error adding student:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to add student",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to add student',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -334,12 +353,25 @@ const AddStudent = () => {
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="student_id">Student ID *</Label>
-                <Input
-                  id="student_id"
-                  value={formData.student_id}
-                  onChange={(e) => handleInputChange('student_id', e.target.value)}
-                  required
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="student_id"
+                    value={formData.student_id}
+                    onChange={(e) => handleInputChange('student_id', e.target.value)}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      const uniqueId = await ensureUniqueStudentId();
+                      setFormData(prev => ({ ...prev, student_id: uniqueId }));
+                      toast({ description: 'Generated a new Student ID' });
+                    }}
+                  >
+                    Generate
+                  </Button>
+                </div>
               </div>
               <div>
                 <Label htmlFor="roll_number">Roll Number</Label>
