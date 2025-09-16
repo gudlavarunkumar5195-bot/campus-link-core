@@ -23,6 +23,8 @@ const LoginSystem = () => {
   // Redirect if already logged in
   if (user) {
     return null; // Let the router handle the redirect
+  }
+
   const [credentialsLogin, setCredentialsLogin] = useState({
     username: '',
     password: ''
