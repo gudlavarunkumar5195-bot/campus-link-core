@@ -22,6 +22,13 @@ const Dashboard: React.FC<DashboardProps> = ({ currentPage, userRole }) => {
         return <ClassStructureManagement />;
       case 'school-config':
         return <SchoolConfiguration />;
+      case 'analytics':
+        return (
+          <div className="p-6">
+            <h1 className="text-2xl font-bold mb-4">Analytics Dashboard</h1>
+            <p className="text-gray-600">School analytics and performance metrics will be displayed here.</p>
+          </div>
+        );
       case 'users':
         return (
           <div className="p-6">
@@ -84,7 +91,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentPage, userRole }) => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
       {renderContent()}
     </div>
   );

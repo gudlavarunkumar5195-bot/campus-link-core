@@ -179,31 +179,31 @@ const AddStaff = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen page-container">
       <div className="max-w-4xl mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               onClick={() => navigate(-1)}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 glass-effect"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Back</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
                 <UserPlus className="h-8 w-8" />
                 Add Staff
               </h1>
-              <p className="text-gray-600">Add a new staff member to the school</p>
+              <p className="text-muted-foreground">Add a new staff member to the school</p>
             </div>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal Information */}
-          <Card>
+          <Card className="form-container border-white/50 shadow-lg">
             <CardHeader>
               <CardTitle>Personal Information</CardTitle>
             </CardHeader>
@@ -318,7 +318,7 @@ const AddStaff = () => {
           </Card>
 
           {/* Professional Information */}
-          <Card>
+          <Card className="form-container border-white/50 shadow-lg">
             <CardHeader>
               <CardTitle>Professional Information</CardTitle>
             </CardHeader>
@@ -406,7 +406,7 @@ const AddStaff = () => {
           </Card>
 
           {/* Employment Details */}
-          <Card>
+          <Card className="form-container border-white/50 shadow-lg">
             <CardHeader>
               <CardTitle>Employment Details</CardTitle>
             </CardHeader>

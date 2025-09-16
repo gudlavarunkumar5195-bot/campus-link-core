@@ -1,141 +1,156 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, BookOpen, UserCheck, FileText } from 'lucide-react';
+import { Users, BookOpen, UserCheck, TrendingUp, Building2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import IndiaFlagSection from '@/components/ui/india-flag-section';
 
 interface DashboardStatsProps {
   userRole: 'admin' | 'teacher' | 'student';
 }
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({ userRole }) => {
-  const { data: stats } = useQuery({
-    queryKey: ['dashboard-stats', userRole],
+  const { profile } = useAuth();
+
+  // Fetch school information
+  const { data: school } = useQuery({
+    queryKey: ['school', profile?.school_id],
     queryFn: async () => {
-      const user = await supabase.auth.getUser();
-      if (!user.data.user) throw new Error('No user');
-
-      if (userRole === 'admin') {
-        const [studentsCount, teachersCount, classesCount, subjectsCount] = await Promise.all([
-          supabase.from('students').select('id', { count: 'exact' }),
-          supabase.from('teachers').select('id', { count: 'exact' }),
-          supabase.from('classes').select('id', { count: 'exact' }),
-          supabase.from('subjects').select('id', { count: 'exact' }),
-        ]);
-
-        return {
-          students: studentsCount.count || 0,
-          teachers: teachersCount.count || 0,
-          classes: classesCount.count || 0,
-          subjects: subjectsCount.count || 0,
-        };
-      }
-
-      if (userRole === 'teacher') {
-        const teacher = await supabase
-          .from('teachers')
-          .select('id')
-          .eq('profile_id', user.data.user.id)
-          .single();
-
-        if (!teacher.data) return { classes: 0, students: 0, subjects: 0 };
-
-        const [classesCount, studentsCount, subjectsCount] = await Promise.all([
-          supabase
-            .from('teacher_subjects')
-            .select('class_id', { count: 'exact' })
-            .eq('teacher_id', teacher.data.id),
-          supabase
-            .from('students')
-            .select('id', { count: 'exact' })
-            .in('class_id', []),
-          supabase
-            .from('teacher_subjects')
-            .select('subject_id', { count: 'exact' })
-            .eq('teacher_id', teacher.data.id),
-        ]);
-
-        return {
-          classes: classesCount.count || 0,
-          students: studentsCount.count || 0,
-          subjects: subjectsCount.count || 0,
-        };
-      }
-
-      // Student stats
-      const student = await supabase
-        .from('students')
-        .select('id, class_id')
-        .eq('profile_id', user.data.user.id)
+      if (!profile?.school_id) return null;
+      
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .eq('id', profile.school_id)
         .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.school_id,
+  });
 
-      if (!student.data) return { attendance: 0, grades: 0, assignments: 0 };
+  // Fetch counts for statistics
+  const { data: stats } = useQuery({
+    queryKey: ['dashboard-stats', profile?.school_id],
+    queryFn: async () => {
+      if (!profile?.school_id) return null;
 
-      const [attendanceCount, gradesCount, assignmentsCount] = await Promise.all([
+      const [studentsResult, teachersResult, staffResult, classesResult] = await Promise.all([
         supabase
-          .from('attendance')
-          .select('id', { count: 'exact' })
-          .eq('student_id', student.data.id),
+          .from('students')
+          .select('id', { count: 'exact', head: true })
+          .eq('profiles.school_id', profile.school_id),
         supabase
-          .from('grades')
-          .select('id', { count: 'exact' })
-          .eq('student_id', student.data.id),
+          .from('teachers') 
+          .select('id', { count: 'exact', head: true })
+          .eq('profiles.school_id', profile.school_id),
         supabase
-          .from('assignments')
-          .select('id', { count: 'exact' })
-          .eq('class_id', student.data.class_id),
+          .from('staff')
+          .select('id', { count: 'exact', head: true })
+          .eq('profiles.school_id', profile.school_id),
+        supabase
+          .from('classes')
+          .select('id', { count: 'exact', head: true })
+          .eq('school_id', profile.school_id)
       ]);
 
       return {
-        attendance: attendanceCount.count || 0,
-        grades: gradesCount.count || 0,
-        assignments: assignmentsCount.count || 0,
+        students: studentsResult.count || 0,
+        teachers: teachersResult.count || 0,
+        staff: staffResult.count || 0,
+        classes: classesResult.count || 0,
       };
     },
+    enabled: !!profile?.school_id,
   });
 
-  const getStatsConfig = () => {
-    if (userRole === 'admin') {
-      return [
-        { title: 'Total Students', value: stats?.students || 0, icon: Users, color: 'text-blue-600' },
-        { title: 'Total Teachers', value: stats?.teachers || 0, icon: UserCheck, color: 'text-green-600' },
-        { title: 'Total Classes', value: stats?.classes || 0, icon: BookOpen, color: 'text-purple-600' },
-        { title: 'Total Subjects', value: stats?.subjects || 0, icon: FileText, color: 'text-orange-600' },
-      ];
+  const statsCards = [
+    {
+      title: 'Total Students',
+      value: stats?.students?.toString() || '0',
+      icon: <Users className="h-5 w-5" />,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50'
+    },
+    {
+      title: 'Total Teachers',
+      value: stats?.teachers?.toString() || '0',
+      icon: <UserCheck className="h-5 w-5" />,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50'
+    },
+    {
+      title: 'Total Staff',
+      value: stats?.staff?.toString() || '0',
+      icon: <Building2 className="h-5 w-5" />,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50'
+    },
+    {
+      title: 'Active Classes',
+      value: stats?.classes?.toString() || '0',
+      icon: <BookOpen className="h-5 w-5" />,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50'
     }
-
-    if (userRole === 'teacher') {
-      return [
-        { title: 'My Classes', value: stats?.classes || 0, icon: BookOpen, color: 'text-blue-600' },
-        { title: 'My Students', value: stats?.students || 0, icon: Users, color: 'text-green-600' },
-        { title: 'My Subjects', value: stats?.subjects || 0, icon: FileText, color: 'text-purple-600' },
-      ];
-    }
-
-    return [
-      { title: 'Attendance Records', value: stats?.attendance || 0, icon: UserCheck, color: 'text-blue-600' },
-      { title: 'Grades', value: stats?.grades || 0, icon: FileText, color: 'text-green-600' },
-      { title: 'Assignments', value: stats?.assignments || 0, icon: BookOpen, color: 'text-purple-600' },
-    ];
-  };
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-      {getStatsConfig().map((stat) => {
-        const Icon = stat.icon;
-        return (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <Icon className={`h-4 w-4 ${stat.color}`} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <IndiaFlagSection
+        title={`${userRole === 'admin' ? 'Admin' : userRole === 'teacher' ? 'Teacher' : 'Student'} Dashboard`}
+        subtitle={school ? `Welcome to ${school.name} - Your academic management hub` : 'Welcome to your dashboard'}
+        className="mb-8"
+      />
+      
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {statsCards.map((stat, index) => (
+            <Card key={index} className="bg-white/80 backdrop-blur-sm border-white/50 shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className={`${stat.bgColor} p-3 rounded-full`}>
+                    <div className={stat.color}>
+                      {stat.icon}
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-slate-600">{stat.title}</p>
+                    <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {school && (
+          <Card className="mt-8 bg-white/80 backdrop-blur-sm border-white/50">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Building2 className="h-5 w-5" />
+                <span>School Information</span>
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-slate-600">School Name</p>
+                <p className="font-semibold text-slate-900">{school.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Address</p>
+                <p className="font-semibold text-slate-900">{school.address || 'Not provided'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Contact</p>
+                <p className="font-semibold text-slate-900">{school.email || school.phone || 'Not provided'}</p>
+              </div>
             </CardContent>
           </Card>
-        );
-      })}
+        )}
+      </div>
     </div>
   );
 };
