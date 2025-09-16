@@ -14,7 +14,7 @@ const SystemSettings = () => {
 
   if (!user || !profile) {
     return (
-      <div className="min-h-screen page-container flex items-center justify-center">
+      <div className="min-h-screen page-container animated-bg flex items-center justify-center">
         <div className="text-center form-container border-white/50 shadow-lg p-8 rounded-lg">
           <h2 className="text-2xl font-bold mb-2 text-foreground">Access Denied</h2>
           <p className="text-muted-foreground">Please log in to continue.</p>
@@ -25,7 +25,7 @@ const SystemSettings = () => {
 
   if (!isSuperAdmin) {
     return (
-      <div className="min-h-screen page-container flex items-center justify-center">
+      <div className="min-h-screen page-container animated-bg flex items-center justify-center">
         <div className="text-center form-container border-white/50 shadow-lg p-8 rounded-lg">
           <Settings className="h-16 w-16 mx-auto text-gray-400 mb-4" />
           <h2 className="text-2xl font-bold mb-2 text-foreground">Access Denied</h2>
@@ -86,7 +86,7 @@ const SystemSettings = () => {
   ];
 
   return (
-    <div className="min-h-screen page-container">
+    <div className="min-h-screen page-container animated-bg">
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">

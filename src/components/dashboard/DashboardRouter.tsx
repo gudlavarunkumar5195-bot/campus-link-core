@@ -12,7 +12,7 @@ const DashboardRouter: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen page-container flex items-center justify-center">
+        <div className="min-h-screen page-container animated-bg flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
@@ -20,7 +20,7 @@ const DashboardRouter: React.FC = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen page-container flex items-center justify-center">
+      <div className="min-h-screen page-container animated-bg flex items-center justify-center">
         <div className="text-center form-container border-white/50 shadow-lg p-8 rounded-lg">
           <h2 className="text-2xl font-bold mb-2 text-foreground">Access Denied</h2>
           <p className="text-muted-foreground">Please log in to continue.</p>
@@ -44,7 +44,7 @@ const DashboardRouter: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen page-container">
+    <div className="min-h-screen page-container animated-bg">
       <Header />
       <div>
         {renderDashboard()}

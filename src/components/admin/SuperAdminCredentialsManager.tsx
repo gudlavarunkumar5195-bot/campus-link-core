@@ -95,7 +95,8 @@ const SuperAdminCredentialsManager: React.FC = () => {
       });
 
       if (error || !data?.success) {
-        throw new Error(data?.error || error?.message || 'Failed to create super admin');
+        const serverMsg = (data as any)?.error || (error as any)?.context?.body?.error || (error as any)?.context?.error || error?.message || 'Failed to create super admin';
+        throw new Error(serverMsg);
       }
 
       toast({ title: "Success", description: "Super admin created successfully" });

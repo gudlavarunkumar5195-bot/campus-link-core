@@ -15,7 +15,7 @@ const UsersManagement = () => {
 
   if (!user || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen page-container animated-bg flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
           <p className="text-gray-600">Please log in to continue.</p>
@@ -26,7 +26,7 @@ const UsersManagement = () => {
 
   if (!isSuperAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen page-container animated-bg flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardContent className="text-center py-8">
             <Users className="h-16 w-16 mx-auto text-gray-400 mb-4" />
@@ -44,7 +44,7 @@ const UsersManagement = () => {
   }
 
   return (
-    <div className="min-h-screen page-container">
+    <div className="min-h-screen page-container animated-bg">
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">

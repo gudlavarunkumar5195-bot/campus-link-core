@@ -73,7 +73,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen page-container">
+    <div className="min-h-screen page-container animated-bg">
       {/* Hero Section */}
       <IndiaFlagSection
         title="School ERP System"

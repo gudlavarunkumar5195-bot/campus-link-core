@@ -25,7 +25,7 @@ const SchoolConfiguration = () => {
   const schoolId = profile.school_id;
 
   return (
-    <div className="page-container space-y-6">
+    <div className="page-container animated-bg space-y-6">
       <div className="max-w-7xl mx-auto p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 glass-effect">

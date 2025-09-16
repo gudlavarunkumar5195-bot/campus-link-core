@@ -73,7 +73,7 @@ const LoginSystem = () => {
 
       // Check password
       if (credentials.default_password !== credentialsLogin.password) {
-        throw new Error('Invalid username or password');
+        throw new Error('Invalid username or password. Please use the default password assigned to your username. You can find it under School Config > Credentials.');
       }
 
       console.log('Password matches, attempting Supabase auth...');
@@ -183,7 +183,7 @@ const LoginSystem = () => {
   }
 
   return (
-    <div className="min-h-screen page-container flex items-center justify-center p-4">
+    <div className="min-h-screen page-container animated-bg flex items-center justify-center p-4">
       <Card className="w-full max-w-md form-container border-white/50 shadow-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">

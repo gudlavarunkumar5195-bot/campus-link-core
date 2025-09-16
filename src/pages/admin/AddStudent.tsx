@@ -173,7 +173,10 @@ const AddStudent = () => {
         },
       });
 
-      if (error || !data?.success) throw new Error(data?.error || error?.message || 'Failed to add student');
+      if (error || !data?.success) {
+        const serverMsg = (data as any)?.error || (error as any)?.context?.body?.error || (error as any)?.context?.error || error?.message || 'Failed to add student';
+        throw new Error(serverMsg);
+      }
 
       toast({
         title: 'Success',
@@ -209,7 +212,7 @@ const AddStudent = () => {
   }
 
   return (
-    <div className="min-h-screen page-container">
+    <div className="min-h-screen page-container animated-bg">
       <div className="max-w-4xl mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">

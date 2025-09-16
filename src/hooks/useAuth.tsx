@@ -9,15 +9,15 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Listen for auth changes FIRST to avoid race conditions
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-      
-      // Log tenant info for debugging
+
+      // Log tenant info when auth state changes
       if (session?.user?.user_metadata) {
-        console.log('Auth initialized - User metadata:', {
+        console.log('Auth state changed - User metadata:', {
           tenant_id: session.user.user_metadata.tenant_id,
           role: session.user.user_metadata.role,
           email: session.user.email
@@ -25,15 +25,15 @@ export const useAuth = () => {
       }
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // THEN get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-      
-      // Log tenant info when auth state changes
+
+      // Log tenant info for debugging
       if (session?.user?.user_metadata) {
-        console.log('Auth state changed - User metadata:', {
+        console.log('Auth initialized - User metadata:', {
           tenant_id: session.user.user_metadata.tenant_id,
           role: session.user.user_metadata.role,
           email: session.user.email

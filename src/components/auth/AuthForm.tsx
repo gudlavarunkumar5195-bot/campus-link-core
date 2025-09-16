@@ -63,7 +63,7 @@ const AuthForm: React.FC = () => {
 
   if (showSignUp) {
     return (
-      <div className="min-h-screen page-container flex items-center justify-center">
+      <div className="min-h-screen page-container animated-bg flex items-center justify-center">
         <div className="form-container border-white/50 shadow-lg p-8 rounded-lg">
           <SignUpForm onBackToLogin={() => setShowSignUp(false)} />
         </div>
@@ -72,7 +72,7 @@ const AuthForm: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen page-container flex items-center justify-center">
+    <div className="min-h-screen page-container animated-bg flex items-center justify-center">
         <Card className="w-full max-w-md form-container border-white/50 shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center text-foreground">
