@@ -341,12 +341,25 @@ const AddTeacher = () => {
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="employee_id">Employee ID *</Label>
-                <Input
-                  id="employee_id"
-                  value={formData.employee_id}
-                  onChange={(e) => handleInputChange('employee_id', e.target.value)}
-                  required
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="employee_id"
+                    value={formData.employee_id}
+                    onChange={(e) => handleInputChange('employee_id', e.target.value)}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      const uniqueId = await ensureUniqueEmployeeId();
+                      setFormData(prev => ({ ...prev, employee_id: uniqueId }));
+                      toast({ description: 'Generated a new Employee ID' });
+                    }}
+                  >
+                    Generate
+                  </Button>
+                </div>
               </div>
               <div>
                 <Label htmlFor="department">Department</Label>
