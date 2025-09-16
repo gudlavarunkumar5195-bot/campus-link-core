@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.admin-create-organization]
 verify_jwt = true
+
+[functions.sync-auth-user]
+verify_jwt = false

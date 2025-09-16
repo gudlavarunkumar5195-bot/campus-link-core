@@ -87,44 +87,39 @@ const LoginSystem = () => {
       console.log('Auth result:', authData, authError);
 
       if (authError) {
-        console.log('Auth user not found, creating...');
-        
-        // Try to create the auth user first
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: credentials.profiles.email,
-          password: credentialsLogin.password,
-          options: {
-            data: {
+        console.log('Auth user not found or password mismatch, syncing via edge function...');
+
+        // Ensure the auth user exists and has this exact password
+        const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-auth-user', {
+          body: {
+            email: credentials.profiles.email,
+            password: credentialsLogin.password,
+            metadata: {
               first_name: credentials.profiles.first_name,
               last_name: credentials.profiles.last_name,
               role: credentials.profiles.role,
               school_id: credentials.profiles.school_id
-            },
-            emailRedirectTo: window.location.origin
+            }
           }
         });
 
-        console.log('SignUp result:', signUpData, signUpError);
-
-        if (signUpError && !signUpError.message.includes('already registered')) {
-          console.error('SignUp error:', signUpError);
-          throw new Error(`Failed to create auth user: ${signUpError.message}`);
+        if (syncError || !syncResult?.success) {
+          console.error('Sync auth user failed:', syncError || syncResult);
+          throw new Error(syncResult?.error || syncError?.message || 'Failed to sync account');
         }
 
-        // Wait a moment then try signing in again
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+        // Try signing in again now that password is synced/created
         const { data: retryAuth, error: retryError } = await supabase.auth.signInWithPassword({
           email: credentials.profiles.email,
           password: credentialsLogin.password
         });
-
+        
         if (retryError) {
           console.error('Retry auth error:', retryError);
-          throw new Error('Login failed after account creation. Please try again in a moment.');
+          throw new Error('Login failed even after account sync. Please try again.');
         }
 
-        console.log('Login successful after creation');
+        console.log('Login successful after sync');
       }
 
       // Update last login time
