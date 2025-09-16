@@ -77,103 +77,34 @@ const SuperAdminCredentialsManager: React.FC = () => {
 
   const createSuperAdmin = async () => {
     if (!newAdmin.firstName || !newAdmin.lastName || !newAdmin.email || !newAdmin.username || !newAdmin.password) {
-      toast({
-        title: "Error",
-        description: "All fields are required",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "All fields are required", variant: "destructive" });
       return;
     }
 
     setLoading(true);
     try {
-      // Check if email already exists
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', newAdmin.email)
-        .maybeSingle();
-
-      if (existingProfile) {
-        throw new Error('User with this email already exists');
-      }
-
-      // Check if username already exists
-      const { data: existingUsername } = await supabase
-        .from('user_credentials')
-        .select('id')
-        .eq('username', newAdmin.username)
-        .maybeSingle();
-
-      if (existingUsername) {
-        throw new Error('Username already exists');
-      }
-
-      const profileId = crypto.randomUUID();
-
-      // Create profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: profileId,
+      // Call secure Edge Function to create auth user + profile + credentials
+      const { data, error } = await supabase.functions.invoke('create-super-admin', {
+        body: {
           first_name: newAdmin.firstName,
           last_name: newAdmin.lastName,
           email: newAdmin.email,
-          role: 'admin',
-          school_id: null, // Super admin has no school association
-          is_active: true
-        });
-
-      if (profileError) throw profileError;
-
-      // Create credentials
-      const { error: credError } = await supabase
-        .from('user_credentials')
-        .insert({
-          profile_id: profileId,
           username: newAdmin.username,
-          default_password: newAdmin.password,
-          is_active: true
-        });
+          password: newAdmin.password,
+        },
+      });
 
-      if (credError) throw credError;
-
-      // Create staff record
-      const { error: staffError } = await supabase
-        .from('staff')
-        .insert({
-          profile_id: profileId,
-          employee_id: `SUPER${Date.now().toString().slice(-4)}`,
-          hire_date: new Date().toISOString().split('T')[0],
-          position: 'Super Administrator'
-        });
-
-      if (staffError) {
-        console.error('Staff record creation error (non-critical):', staffError);
+      if (error || !data?.success) {
+        throw new Error(data?.error || error?.message || 'Failed to create super admin');
       }
 
-      toast({
-        title: "Success",
-        description: "Super admin created successfully",
-      });
-
-      setNewAdmin({
-        firstName: '',
-        lastName: '',
-        email: '',
-        username: '',
-        password: ''
-      });
+      toast({ title: "Success", description: "Super admin created successfully" });
+      setNewAdmin({ firstName: '', lastName: '', email: '', username: '', password: '' });
       setCreateDialogOpen(false);
       loadSuperAdmins();
-
     } catch (error: any) {
       console.error('Error creating super admin:', error);
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
