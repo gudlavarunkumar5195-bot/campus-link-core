@@ -928,6 +928,8 @@ export type Database = {
           logo_url: string | null
           name: string
           phone: string | null
+          slug: string | null
+          status: string | null
           updated_at: string | null
           website: string | null
         }
@@ -939,6 +941,8 @@ export type Database = {
           logo_url?: string | null
           name: string
           phone?: string | null
+          slug?: string | null
+          status?: string | null
           updated_at?: string | null
           website?: string | null
         }
@@ -950,6 +954,8 @@ export type Database = {
           logo_url?: string | null
           name?: string
           phone?: string | null
+          slug?: string | null
+          status?: string | null
           updated_at?: string | null
           website?: string | null
         }
@@ -1599,6 +1605,10 @@ export type Database = {
       tenant_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      toggle_school_status: {
+        Args: { new_status: string; school_id: string }
+        Returns: undefined
       }
     }
     Enums: {
