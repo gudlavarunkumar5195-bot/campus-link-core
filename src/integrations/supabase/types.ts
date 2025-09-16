@@ -65,6 +65,54 @@ export type Database = {
           },
         ]
       }
+      announcements: {
+        Row: {
+          class_id: string | null
+          content: string
+          created_at: string | null
+          created_by: string
+          expire_date: string | null
+          id: string
+          is_published: boolean | null
+          priority: string | null
+          publish_date: string | null
+          tenant_id: string | null
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          class_id?: string | null
+          content: string
+          created_at?: string | null
+          created_by: string
+          expire_date?: string | null
+          id?: string
+          is_published?: boolean | null
+          priority?: string | null
+          publish_date?: string | null
+          tenant_id?: string | null
+          title: string
+          type?: string
+          updated_at?: string | null
+        }
+        Update: {
+          class_id?: string | null
+          content?: string
+          created_at?: string | null
+          created_by?: string
+          expire_date?: string | null
+          id?: string
+          is_published?: boolean | null
+          priority?: string | null
+          publish_date?: string | null
+          tenant_id?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       assignment_submissions: {
         Row: {
           assignment_id: string | null
@@ -675,6 +723,54 @@ export type Database = {
           },
         ]
       }
+      fee_structures: {
+        Row: {
+          academic_year: string
+          class_id: string
+          created_at: string | null
+          discount_amount: number | null
+          discount_percentage: number | null
+          fee_heads: Json
+          final_amount: number
+          id: string
+          is_active: boolean | null
+          school_id: string
+          tenant_id: string | null
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          academic_year: string
+          class_id: string
+          created_at?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          fee_heads?: Json
+          final_amount?: number
+          id?: string
+          is_active?: boolean | null
+          school_id: string
+          tenant_id?: string | null
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Update: {
+          academic_year?: string
+          class_id?: string
+          created_at?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          fee_heads?: Json
+          final_amount?: number
+          id?: string
+          is_active?: boolean | null
+          school_id?: string
+          tenant_id?: string | null
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       grades: {
         Row: {
           assessment_name: string
@@ -754,6 +850,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      homework: {
+        Row: {
+          class_id: string
+          created_at: string | null
+          description: string | null
+          due_date: string
+          id: string
+          subject_id: string
+          teacher_id: string
+          tenant_id: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          class_id: string
+          created_at?: string | null
+          description?: string | null
+          due_date: string
+          id?: string
+          subject_id: string
+          teacher_id: string
+          tenant_id?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          class_id?: string
+          created_at?: string | null
+          description?: string | null
+          due_date?: string
+          id?: string
+          subject_id?: string
+          teacher_id?: string
+          tenant_id?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -1295,6 +1430,42 @@ export type Database = {
           },
         ]
       }
+      teacher_class_assignments: {
+        Row: {
+          academic_year: string
+          class_id: string
+          created_at: string | null
+          id: string
+          is_class_teacher: boolean | null
+          subject_id: string | null
+          teacher_id: string
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          academic_year: string
+          class_id: string
+          created_at?: string | null
+          id?: string
+          is_class_teacher?: boolean | null
+          subject_id?: string | null
+          teacher_id: string
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          academic_year?: string
+          class_id?: string
+          created_at?: string | null
+          id?: string
+          is_class_teacher?: boolean | null
+          subject_id?: string | null
+          teacher_id?: string
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       teacher_subjects: {
         Row: {
           class_id: string | null
@@ -1559,6 +1730,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_permissions: {
+        Row: {
+          created_at: string | null
+          granted_by: string
+          id: string
+          permission_level: string
+          permission_type: string
+          profile_id: string
+          resource_id: string | null
+          tenant_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          granted_by: string
+          id?: string
+          permission_level?: string
+          permission_type: string
+          profile_id: string
+          resource_id?: string | null
+          tenant_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          granted_by?: string
+          id?: string
+          permission_level?: string
+          permission_type?: string
+          profile_id?: string
+          resource_id?: string | null
+          tenant_id?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
