@@ -20,6 +20,9 @@ import Assignments from '@/pages/Assignments';
 import Documents from '@/pages/Documents';
 import Schedule from '@/pages/Schedule';
 import Profile from '@/pages/Profile';
+import ProfilesManagement from '@/pages/ProfilesManagement';
+import DocumentsManagement from '@/pages/DocumentsManagement';
+import FeeManagement from '@/pages/FeeManagement';
 import CreateSchool from '@/pages/CreateSchool';
 import SchoolsManagement from '@/pages/SchoolsManagement';
 import SuperAdminDashboard from '@/components/admin/SuperAdminDashboard';
@@ -74,6 +77,9 @@ function AppContent() {
         <Route path="/documents" element={<Documents />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profiles-management" element={<ProfilesManagement />} />
+        <Route path="/documents-management" element={<DocumentsManagement />} />
+        <Route path="/fee-management" element={<FeeManagement />} />
         <Route path="/create-school" element={<CreateSchool />} />
         <Route path="/schools" element={<SchoolsManagement />} />
         <Route path="/super-admin" element={<SuperAdminDashboard />} />

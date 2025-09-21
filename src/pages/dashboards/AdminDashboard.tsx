@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, BookOpen, UserPlus, GraduationCap, Settings, Upload, Key, FileText, Calendar, BarChart3, Bell } from 'lucide-react';
+import { Users, BookOpen, UserPlus, GraduationCap, Settings, Upload, Key, FileText, Calendar, BarChart3, Bell, User, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import IndiaFlagSection from '@/components/ui/india-flag-section';
 
@@ -84,6 +84,30 @@ const AdminDashboard = () => {
       path: '/analytics',
       color: 'bg-red-50 hover:bg-red-100 border-red-200',
       iconColor: 'text-red-600'
+    },
+    {
+      title: 'Profile Management',
+      description: 'View and edit user profiles',
+      icon: <User className="h-6 w-6" />,
+      path: '/profiles-management',
+      color: 'bg-pink-50 hover:bg-pink-100 border-pink-200',
+      iconColor: 'text-pink-600'
+    },
+    {
+      title: 'Document Management',
+      description: 'Manage required documents',
+      icon: <FileText className="h-6 w-6" />,
+      path: '/documents-management',
+      color: 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200',
+      iconColor: 'text-yellow-600'
+    },
+    {
+      title: 'Fee Management',
+      description: 'Configure fee structures',
+      icon: <DollarSign className="h-6 w-6" />,
+      path: '/fee-management',
+      color: 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200',
+      iconColor: 'text-emerald-600'
     }
   ];
 
