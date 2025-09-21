@@ -67,13 +67,14 @@ const FeeStructureManager = () => {
 
   // Fetch fee heads
   const { data: feeHeads, isLoading: loadingFeeHeads } = useQuery({
-    queryKey: ['fee-heads'],
+    queryKey: ['fee-heads', profile?.school_id],
+    enabled: !!profile?.school_id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('fee_heads')
         .select('*')
+        .eq('school_id', profile!.school_id)
         .order('name');
-      
       if (error) throw error;
       return data as FeeHead[];
     },
@@ -81,35 +82,34 @@ const FeeStructureManager = () => {
 
   // Fetch classes
   const { data: classes } = useQuery({
-    queryKey: ['classes'],
+    queryKey: ['classes', profile?.school_id],
+    enabled: !!profile?.school_id,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('classes')
-        .select('*')
-        .order('name');
-      
+        .from('class_structure')
+        .select('id, class_name')
+        .eq('school_id', profile!.school_id)
+        .order('class_name');
       if (error) throw error;
-      return data as Class[];
+      return (data || []).map((c: any) => ({
+        id: c.id,
+        name: c.class_name,
+        grade_level: 0,
+        academic_year: ''
+      })) as Class[];
     },
   });
 
   // Fetch fee structures
   const { data: feeStructures, isLoading: loadingFeeStructures } = useQuery({
-    queryKey: ['fee-structures'],
+    queryKey: ['fee-structures', profile?.school_id],
+    enabled: !!profile?.school_id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('fee_structures')
-        .select(`
-          *,
-          classes:class_id (
-            id,
-            name,
-            grade_level,
-            academic_year
-          )
-        `)
+        .select('*')
+        .eq('school_id', profile!.school_id)
         .order('created_at', { ascending: false });
-      
       if (error) throw error;
       return data as FeeStructure[];
     },
@@ -583,7 +583,7 @@ const FeeStructureManager = () => {
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center space-x-2">
                         <BookOpen className="h-5 w-5" />
-                        <span>{structure.classes?.name}</span>
+                        <span>{classes?.find(c => c.id === structure.class_id)?.name || 'Class'}</span>
                       </CardTitle>
                       <Badge variant={structure.is_active ? 'default' : 'secondary'}>
                         {structure.is_active ? 'Active' : 'Inactive'}
