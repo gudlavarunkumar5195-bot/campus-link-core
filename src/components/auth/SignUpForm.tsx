@@ -254,7 +254,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onBackToLogin }) => {
               <SelectTrigger className="glass-effect">
                 <SelectValue placeholder={schoolsLoading ? "Loading schools..." : "Select your school"} />
               </SelectTrigger>
-              <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+              <SelectContent className="glass-dropdown z-50">
                 {schools.map((school) => (
                   <SelectItem key={school.id} value={school.id}>
                     {school.name}
@@ -271,7 +271,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onBackToLogin }) => {
               <SelectTrigger className="glass-effect">
                 <SelectValue placeholder="Select your role" />
               </SelectTrigger>
-              <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+              <SelectContent className="glass-dropdown z-50">
                 <SelectItem value="student">Student</SelectItem>
                 <SelectItem value="teacher">Teacher</SelectItem>
                 <SelectItem value="admin">Administrator</SelectItem>

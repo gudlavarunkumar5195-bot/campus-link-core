@@ -174,7 +174,11 @@ const LoginSystem = () => {
   };
 
   if (showSignUp) {
-    return <SignUpForm onBackToLogin={() => setShowSignUp(false)} />;
+    return (
+      <div className="min-h-screen page-container animated-bg flex items-center justify-center p-4">
+        <SignUpForm onBackToLogin={() => setShowSignUp(false)} />
+      </div>
+    );
   }
 
   return (

@@ -34,6 +34,9 @@ import Home from '@/pages/Home';
 import SystemSettings from '@/pages/SystemSettings';
 import UsersManagement from '@/pages/UsersManagement';
 import AcademicYear from '@/pages/AcademicYear';
+import TeacherClassAssignmentPage from '@/pages/TeacherClassAssignment';
+import SettingsWizardPage from '@/pages/SettingsWizard';
+import ProfileView from '@/components/profile/ProfileView';
 
 const queryClient = new QueryClient();
 
@@ -76,10 +79,12 @@ function AppContent() {
         <Route path="/assignments" element={<Assignments />} />
         <Route path="/documents" element={<Documents />} />
         <Route path="/schedule" element={<Schedule />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<div className="min-h-screen page-container animated-bg p-6"><ProfileView /></div>} />
         <Route path="/profiles-management" element={<ProfilesManagement />} />
         <Route path="/documents-management" element={<DocumentsManagement />} />
         <Route path="/fee-management" element={<FeeManagement />} />
+        <Route path="/teacher-class-assignment" element={<TeacherClassAssignmentPage />} />
+        <Route path="/settings-wizard" element={<SettingsWizardPage />} />
         <Route path="/create-school" element={<CreateSchool />} />
         <Route path="/schools" element={<SchoolsManagement />} />
         <Route path="/super-admin" element={<SuperAdminDashboard />} />

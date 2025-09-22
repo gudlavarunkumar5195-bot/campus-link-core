@@ -5,10 +5,25 @@ import { LogOut, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
 const Header: React.FC = () => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
+
+  const { data: school } = useQuery({
+    queryKey: ['school', profile?.school_id],
+    queryFn: async () => {
+      if (!profile?.school_id) return null;
+      const { data } = await supabase
+        .from('schools')
+        .select('name')
+        .eq('id', profile.school_id)
+        .single();
+      return data;
+    },
+    enabled: !!profile?.school_id
+  });
 
   const handleLogout = async () => {
     try {
@@ -35,7 +50,7 @@ const Header: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-foreground">
-            School ERP System
+            {school?.name || 'School ERP System'}
           </h1>
         </div>
         

@@ -405,7 +405,7 @@ const AddStudent = () => {
                   <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
                     {classes.map((cls) => (
                       <SelectItem key={cls.id} value={cls.id}>
-                        {cls.name} - Grade {cls.grade_level}
+                        {cls.class_name}
                       </SelectItem>
                     ))}
                   </SelectContent>

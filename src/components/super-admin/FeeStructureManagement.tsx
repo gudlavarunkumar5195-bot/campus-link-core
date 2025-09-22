@@ -224,11 +224,11 @@ const FeeStructureManagement: React.FC = () => {
                         <SelectValue placeholder="Select class" />
                       </SelectTrigger>
                       <SelectContent>
-                        {classes.map((cls) => (
-                          <SelectItem key={cls.id} value={cls.id}>
-                            {cls.name} - Grade {cls.grade_level}
-                          </SelectItem>
-                        ))}
+                    {classes.map((cls) => (
+                      <SelectItem key={cls.id} value={cls.id}>
+                        {cls.class_name}
+                      </SelectItem>
+                    ))}
                       </SelectContent>
                     </Select>
                   </div>

@@ -109,12 +109,21 @@ export const useSubjects = () => {
 
 export const useClasses = () => {
   return useQuery({
-    queryKey: ['classes'],
+    queryKey: ['class_structure'],
     queryFn: async () => {
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('school_id')
+        .eq('id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+        
+      if (!userProfile?.school_id) return [];
+      
       const { data, error } = await supabase
-        .from('classes')
+        .from('class_structure')
         .select('*')
-        .order('grade_level, name');
+        .eq('school_id', userProfile.school_id)
+        .order('class_name');
       
       if (error) throw error;
       return data || [];
