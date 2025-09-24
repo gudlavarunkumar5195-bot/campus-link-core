@@ -144,14 +144,26 @@ const AddTeacher = () => {
         },
       });
 
-      // Handle network/transport errors
+      // Handle network/transport errors and edge function errors
       if (error) {
         console.error('Edge function transport error:', error);
-        toast({
-          title: "Network Error",
-          description: `Connection failed: ${error.message}. Please check your internet connection and try again.`,
-          variant: "destructive",
-        });
+        
+        // Check if it's a validation error from the edge function (non-2xx response)
+        if (error.message.includes('Edge Function returned a non-2xx status code')) {
+          // This is likely a validation error from the edge function
+          toast({
+            title: "Validation Error", 
+            description: "Failed to create teacher. Please check that the email isn't already registered, employee ID is unique, and all required fields are filled.",
+            variant: "destructive",
+          });
+        } else {
+          // Network error
+          toast({
+            title: "Network Error",
+            description: `Connection failed: ${error.message}. Please check your internet connection and try again.`,
+            variant: "destructive",
+          });
+        }
         return;
       }
 
