@@ -40,10 +40,10 @@ const AddTeacher = () => {
     department: '',
     qualification: '',
     specialization: '',
-    subjects_taught: [] as string[],
+    subjects_taught: '',
     experience_years: '',
     previous_experience: '',
-    training_certifications: [] as string[],
+    training_certifications: '',
     
     // Employment Details
     hire_date: '',
@@ -129,10 +129,10 @@ const AddTeacher = () => {
           qualification: formData.qualification || null,
           specialization: formData.specialization || null,
           department: formData.department || null,
-          subjects_taught: formData.subjects_taught || [],
+          subjects_taught: formData.subjects_taught ? formData.subjects_taught.split(',').map(s => s.trim()).filter(s => s) : [],
           experience_years: formData.experience_years || null,
           previous_experience: formData.previous_experience || null,
-          training_certifications: formData.training_certifications || [],
+          training_certifications: formData.training_certifications ? formData.training_certifications.split(',').map(s => s.trim()).filter(s => s) : [],
           hire_date: formData.hire_date,
           employment_type: formData.employment_type,
           salary: formData.salary || null,
@@ -189,9 +189,8 @@ const AddTeacher = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleArrayChange = (field: string, value: string) => {
-    const values = value.split(',').map(v => v.trim()).filter(v => v);
-    setFormData(prev => ({ ...prev, [field]: values }));
+  const handleStringChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   if (!user || !profile) {
@@ -407,8 +406,8 @@ const AddTeacher = () => {
                 <Label htmlFor="subjects_taught">Subjects Taught (comma separated)</Label>
                 <Input
                   id="subjects_taught"
-                  value={formData.subjects_taught.join(', ')}
-                  onChange={(e) => handleArrayChange('subjects_taught', e.target.value)}
+                  value={formData.subjects_taught}
+                  onChange={(e) => handleStringChange('subjects_taught', e.target.value)}
                   placeholder="Mathematics, Science, English"
                 />
               </div>
@@ -442,8 +441,8 @@ const AddTeacher = () => {
                 <Label htmlFor="training_certifications">Training & Certifications (comma separated)</Label>
                 <Input
                   id="training_certifications"
-                  value={formData.training_certifications.join(', ')}
-                  onChange={(e) => handleArrayChange('training_certifications', e.target.value)}
+                  value={formData.training_certifications}
+                  onChange={(e) => handleStringChange('training_certifications', e.target.value)}
                   placeholder="B.Ed, M.Ed, Computer Training"
                 />
               </div>
