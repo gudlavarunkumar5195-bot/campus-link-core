@@ -144,11 +144,29 @@ const AddTeacher = () => {
         },
       });
 
-      if (error || !data?.success) {
-        const serverMsg = (data as any)?.error || (error as any)?.context?.body?.error || (error as any)?.context?.error || error?.message || 'Failed to add teacher';
-        throw new Error(serverMsg);
+      // Handle network/transport errors
+      if (error) {
+        console.error('Edge function transport error:', error);
+        toast({
+          title: "Network Error",
+          description: `Connection failed: ${error.message}. Please check your internet connection and try again.`,
+          variant: "destructive",
+        });
+        return;
       }
 
+      // Handle business logic errors (non-2xx status codes)  
+      if (!data?.success) {
+        console.error('Edge function business error:', data);
+        toast({
+          title: "Validation Error",
+          description: data?.error || "Failed to create teacher. Please check all required fields and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Success case
       toast({
         title: "Success",
         description: `Teacher added successfully. Temporary password: ${defaultPassword}`,
@@ -156,10 +174,10 @@ const AddTeacher = () => {
 
       navigate('/');
     } catch (error: any) {
-      console.error('Error adding teacher:', error);
+      console.error('Unexpected error adding teacher:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to add teacher",
+        title: "Unexpected Error",
+        description: `Something went wrong: ${error?.message || 'Unknown error'}. Please try again or contact support.`,
         variant: "destructive"
       });
     } finally {
