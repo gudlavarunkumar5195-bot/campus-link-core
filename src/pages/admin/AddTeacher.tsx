@@ -61,6 +61,7 @@ const AddTeacher = () => {
     medical_conditions: '',
     allergies: '',
     special_needs: '',
+    role: 'teacher',
   });
 
   // Generate unique employee id like EMP2025-1234 across profiles
@@ -139,42 +140,25 @@ const AddTeacher = () => {
           probation_period: formData.probation_period || null,
           contract_end_date: formData.contract_end_date || null,
           class_teacher_for: formData.class_teacher_for || null,
+
+          // Role assignment
+          role: formData.role || 'teacher',
           
           password: defaultPassword,
         },
       });
 
-      // Handle network/transport errors and edge function errors
+      // Handle exceptions from edge function and transport
       if (error) {
-        console.error('Edge function transport error:', error);
-        
-        // Check if it's a validation error from the edge function (non-2xx response)
-        if (error.message.includes('Edge Function returned a non-2xx status code')) {
-          // This is likely a validation error from the edge function
-          toast({
-            title: "Validation Error", 
-            description: "Failed to create teacher. Please check that the email isn't already registered, employee ID is unique, and all required fields are filled.",
-            variant: "destructive",
-          });
-        } else {
-          // Network error
-          toast({
-            title: "Network Error",
-            description: `Connection failed: ${error.message}. Please check your internet connection and try again.`,
-            variant: "destructive",
-          });
-        }
+        if (import.meta.env.DEV) console.error('invoke exception:', error);
+        const exceptionMsg = 'Validation failed. Ensure email and employee ID are unique and required fields are filled.';
+        toast({ title: 'Exception', description: exceptionMsg, variant: 'destructive' });
         return;
       }
 
-      // Handle business logic errors (non-2xx status codes)  
       if (!data?.success) {
-        console.error('Edge function business error:', data);
-        toast({
-          title: "Validation Error",
-          description: data?.error || "Failed to create teacher. Please check all required fields and try again.",
-          variant: "destructive",
-        });
+        if (import.meta.env.DEV) console.error('business exception:', data);
+        toast({ title: 'Exception', description: (data as any)?.error || 'Operation failed.', variant: 'destructive' });
         return;
       }
 
@@ -186,11 +170,11 @@ const AddTeacher = () => {
 
       navigate('/');
     } catch (error: any) {
-      console.error('Unexpected error adding teacher:', error);
+      if (import.meta.env.DEV) console.error('Unexpected exception adding teacher:', error);
       toast({
-        title: "Unexpected Error",
-        description: `Something went wrong: ${error?.message || 'Unknown error'}. Please try again or contact support.`,
-        variant: "destructive"
+        title: 'Exception',
+        description: `Something went wrong: ${error?.message || 'Unknown error'}. Please try again.`,
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -489,6 +473,18 @@ const AddTeacher = () => {
                         {option.label}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="role">Assign Role</Label>
+                <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                    <SelectItem value="teacher">Teacher</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -72,6 +72,9 @@ serve(async (req) => {
       probation_period,
       contract_end_date,
       class_teacher_for,
+
+      // Optional: assign role ('teacher' | 'admin')
+      role,
       
       password,
     } = body ?? {};
@@ -93,7 +96,7 @@ serve(async (req) => {
       user_metadata: {
         first_name,
         last_name,
-        role: "teacher",
+        role: role === "admin" ? "admin" : "teacher",
         school_id: requesterProfile.school_id,
       },
     });
@@ -110,7 +113,7 @@ serve(async (req) => {
         last_name,
         email,
         phone: phone ?? null,
-        role: "teacher",
+        role: role === "admin" ? "admin" : "teacher",
         school_id: requesterProfile.school_id,
         date_of_birth: date_of_birth ?? null,
         gender: gender ?? null,
