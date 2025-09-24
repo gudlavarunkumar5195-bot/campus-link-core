@@ -101,7 +101,7 @@ const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ schoolId }) => {
     },
     onError: (error: any) => {
       toast({
-        title: "Upload Failed",
+        title: "Exception",
         description: error.message || "Upload processing failed",
         variant: "destructive",
       });

@@ -106,7 +106,7 @@ const GradeBookManager: React.FC<GradeBookManagerProps> = ({ classId }) => {
       setGradeDialogOpen(false);
     },
     onError: (error) => {
-      toast({ variant: 'destructive', description: error.message });
+      toast({ title: 'Exception', description: error.message, variant: 'destructive' });
     }
   });
 

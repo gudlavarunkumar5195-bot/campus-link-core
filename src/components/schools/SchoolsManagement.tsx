@@ -45,7 +45,7 @@ const SchoolsManagement = () => {
       refetch();
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Exception",
         description: error.message || "Failed to delete school",
         variant: "destructive",
       });

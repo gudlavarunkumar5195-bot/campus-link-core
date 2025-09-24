@@ -146,7 +146,7 @@ const TeacherClassAssignment = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAssignment.teacher_id || !newAssignment.class_id) {
-      toast({ title: 'Error', description: 'Please select teacher and class', variant: 'destructive' });
+      toast({ title: 'Exception', description: 'Please select teacher and class', variant: 'destructive' });
       return;
     }
     createAssignmentMutation.mutate(newAssignment);

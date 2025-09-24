@@ -116,7 +116,7 @@ const SettingsWizard = () => {
         try {
           results[setting.id] = await setting.check();
         } catch (error) {
-          console.error(`Error checking ${setting.id}:`, error);
+          if (import.meta.env.DEV) console.error(`Exception checking ${setting.id}:`, error);
           results[setting.id] = false;
         }
       }

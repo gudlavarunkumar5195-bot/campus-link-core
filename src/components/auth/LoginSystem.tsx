@@ -134,9 +134,9 @@ const LoginSystem = () => {
       });
 
     } catch (error: any) {
-      console.error('Login error:', error);
+      if (import.meta.env.DEV) console.error('Login exception:', error);
       toast({
-        title: "Login failed",
+        title: "Exception",
         description: error.message || 'An error occurred during login',
         variant: "destructive"
       });
@@ -164,7 +164,7 @@ const LoginSystem = () => {
 
     } catch (error: any) {
       toast({
-        title: "Login failed", 
+        title: "Exception", 
         description: error.message,
         variant: "destructive"
       });

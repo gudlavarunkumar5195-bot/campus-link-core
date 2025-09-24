@@ -254,9 +254,9 @@ const TestCredentialsGenerator: React.FC = () => {
           });
 
         } catch (userError: any) {
-          console.error(`❌ Error processing user ${user.email}:`, userError);
+          if (import.meta.env.DEV) console.error(`❌ Exception processing user ${user.email}:`, userError);
           toast({
-            title: "User Creation Error",
+            title: "Exception",
             description: `Failed to create ${user.email}: ${userError.message}`,
             variant: "destructive",
           });
@@ -281,9 +281,9 @@ const TestCredentialsGenerator: React.FC = () => {
       }
 
     } catch (error: any) {
-      console.error('❌ Critical error generating test users:', error);
+      if (import.meta.env.DEV) console.error('❌ Critical exception generating test users:', error);
       toast({
-        title: "Error",
+        title: "Exception",
         description: error.message || "Failed to generate test users",
         variant: "destructive",
       });

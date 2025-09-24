@@ -54,7 +54,7 @@ const FeeHeadForm: React.FC<FeeHeadFormProps> = ({ feeHead, onClose, schoolId })
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
+        title: 'Exception',
         description: error.message || 'Failed to create fee head',
         variant: 'destructive',
       });
@@ -80,7 +80,7 @@ const FeeHeadForm: React.FC<FeeHeadFormProps> = ({ feeHead, onClose, schoolId })
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
+        title: 'Exception',
         description: error.message || 'Failed to update fee head',
         variant: 'destructive',
       });

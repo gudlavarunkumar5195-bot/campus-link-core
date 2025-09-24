@@ -72,7 +72,7 @@ const SchoolSettingsForm: React.FC<SchoolSettingsFormProps> = ({ schoolId }) => 
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
+        title: "Exception",
         description: error.message || "Failed to update settings",
         variant: "destructive",
       });

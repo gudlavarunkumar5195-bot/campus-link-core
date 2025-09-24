@@ -93,7 +93,7 @@ const AddTeacher = () => {
     e.preventDefault();
     if (!profile?.school_id) {
       toast({
-        title: "Error",
+        title: "Exception",
         description: "School information not found",
         variant: "destructive"
       });

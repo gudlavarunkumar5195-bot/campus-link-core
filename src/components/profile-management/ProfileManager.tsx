@@ -77,7 +77,7 @@ const ProfileManager = () => {
     },
     onError: (error) => {
       toast({
-        title: 'Error',
+        title: 'Exception',
         description: `Failed to update profile: ${error.message}`,
         variant: 'destructive',
       });

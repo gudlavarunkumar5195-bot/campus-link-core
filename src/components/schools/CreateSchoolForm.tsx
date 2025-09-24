@@ -62,7 +62,7 @@ const CreateSchoolForm: React.FC<CreateSchoolFormProps> = ({ onSchoolCreated }) 
       });
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Exception",
         description: error.message || "Failed to create school",
         variant: "destructive",
       });

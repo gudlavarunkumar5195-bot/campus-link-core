@@ -162,9 +162,9 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onBackToLogin }) => {
       }, 2000);
 
     } catch (error: any) {
-      console.error('Signup error:', error);
+      if (import.meta.env.DEV) console.error('Signup exception:', error);
       toast({
-        title: "Error",
+        title: "Exception",
         description: error.message,
         variant: "destructive",
       });

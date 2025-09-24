@@ -71,7 +71,7 @@ const Navigation: React.FC<NavigationProps> = ({ userRole, currentPage, onPageCh
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast({
-        title: "Error",
+        title: "Exception",
         description: "Failed to logout",
         variant: "destructive",
       });

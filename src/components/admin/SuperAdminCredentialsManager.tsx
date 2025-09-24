@@ -64,9 +64,9 @@ const SuperAdminCredentialsManager: React.FC = () => {
 
       setCredentials(formattedCredentials);
     } catch (error: any) {
-      console.error('Error loading super admins:', error);
+      if (import.meta.env.DEV) console.error('Exception loading super admins:', error);
       toast({
-        title: "Error",
+        title: "Exception",
         description: error.message,
         variant: "destructive",
       });
@@ -77,7 +77,7 @@ const SuperAdminCredentialsManager: React.FC = () => {
 
   const createSuperAdmin = async () => {
     if (!newAdmin.firstName || !newAdmin.lastName || !newAdmin.email || !newAdmin.username || !newAdmin.password) {
-      toast({ title: "Error", description: "All fields are required", variant: "destructive" });
+      toast({ title: "Exception", description: "All fields are required", variant: "destructive" });
       return;
     }
 
@@ -104,8 +104,8 @@ const SuperAdminCredentialsManager: React.FC = () => {
       setCreateDialogOpen(false);
       loadSuperAdmins();
     } catch (error: any) {
-      console.error('Error creating super admin:', error);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      if (import.meta.env.DEV) console.error('Exception creating super admin:', error);
+      toast({ title: "Exception", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -128,7 +128,7 @@ const SuperAdminCredentialsManager: React.FC = () => {
       loadSuperAdmins();
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Exception",
         description: error.message,
         variant: "destructive",
       });

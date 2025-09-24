@@ -52,7 +52,7 @@ const DocumentTypeForm: React.FC<DocumentTypeFormProps> = ({ documentType, onClo
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
+        title: 'Exception',
         description: error.message || 'Failed to create document type',
         variant: 'destructive',
       });
@@ -78,7 +78,7 @@ const DocumentTypeForm: React.FC<DocumentTypeFormProps> = ({ documentType, onClo
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
+        title: 'Exception',
         description: error.message || 'Failed to update document type',
         variant: 'destructive',
       });

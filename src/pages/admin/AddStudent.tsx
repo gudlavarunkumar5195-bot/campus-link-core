@@ -109,7 +109,7 @@ const AddStudent = () => {
     e.preventDefault();
     if (!profile?.school_id) {
       toast({
-        title: "Error",
+        title: "Exception",
         description: "School information not found",
         variant: "destructive"
       });
@@ -173,25 +173,17 @@ const AddStudent = () => {
         },
       });
 
-      // Handle network/transport errors
+      // Handle exceptions from edge function and transport
       if (error) {
-        console.error('Edge function transport error:', error);
-        toast({
-          title: "Network Error",
-          description: `Connection failed: ${error.message}. Please check your internet connection and try again.`,
-          variant: "destructive",
-        });
+        if (import.meta.env.DEV) console.error('invoke exception:', error);
+        const exceptionMsg = 'Validation failed. Ensure email and student ID are unique and required fields are filled.';
+        toast({ title: 'Exception', description: exceptionMsg, variant: 'destructive' });
         return;
       }
 
-      // Handle business logic errors (non-2xx status codes)
       if (!data?.success) {
-        console.error('Edge function business error:', data);
-        toast({
-          title: "Validation Error",
-          description: data?.error || "Failed to create student. Please check all required fields and try again.",
-          variant: "destructive",
-        });
+        if (import.meta.env.DEV) console.error('business exception:', data);
+        toast({ title: 'Exception', description: (data as any)?.error || 'Operation failed.', variant: 'destructive' });
         return;
       }
 
@@ -203,11 +195,11 @@ const AddStudent = () => {
 
       navigate('/');
     } catch (error: any) {
-      console.error('Unexpected error adding student:', error);
+      if (import.meta.env.DEV) console.error('Unexpected exception adding student:', error);
       toast({
-        title: 'Unexpected Error',
-        description: `Something went wrong: ${error?.message || 'Unknown error'}. Please try again or contact support.`,
-        variant: 'destructive',
+        title: 'Exception',
+        description: `Something went wrong: ${error?.message || 'Unknown error'}. Please try again.`,
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);

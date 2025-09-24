@@ -101,7 +101,7 @@ const TeacherClassesView = () => {
       queryClient.invalidateQueries({ queryKey: ['teacher-homework'] });
     },
     onError: (error) => {
-      toast({ title: "Error", description: "Failed to assign homework", variant: "destructive" });
+      toast({ title: "Exception", description: "Failed to assign homework", variant: "destructive" });
     }
   });
 
@@ -124,7 +124,7 @@ const TeacherClassesView = () => {
       queryClient.invalidateQueries({ queryKey: ['teacher-announcements'] });
     },
     onError: (error) => {
-      toast({ title: "Error", description: "Failed to post announcement", variant: "destructive" });
+      toast({ title: "Exception", description: "Failed to post announcement", variant: "destructive" });
     }
   });
 

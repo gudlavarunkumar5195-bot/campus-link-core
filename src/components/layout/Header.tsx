@@ -36,7 +36,7 @@ const Header: React.FC = () => {
       });
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Exception",
         description: error.message,
         variant: "destructive",
       });

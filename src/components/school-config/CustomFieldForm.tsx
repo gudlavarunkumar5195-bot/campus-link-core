@@ -59,7 +59,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({ field, onClose, schoo
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
+        title: 'Exception',
         description: error.message || 'Failed to create custom field',
         variant: 'destructive',
       });
@@ -85,7 +85,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({ field, onClose, schoo
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
+        title: 'Exception',
         description: error.message || 'Failed to update custom field',
         variant: 'destructive',
       });

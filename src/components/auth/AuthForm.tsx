@@ -50,9 +50,9 @@ const AuthForm: React.FC = () => {
         description: "Logged in successfully!",
       });
     } catch (error: any) {
-      console.error('Login error:', error);
+      if (import.meta.env.DEV) console.error('Login exception:', error);
       toast({
-        title: "Error",
+        title: "Exception",
         description: error.message,
         variant: "destructive",
       });
